@@ -3,6 +3,10 @@
     "intelica-brain-mcp": {
       "type": "http",
       "url": "https://msngnq5lsxy7sqcw6pgdm45jka0olfsz.lambda-url.us-east-1.on.aws/mcp"
+    },
+    "intelica-aws": {
+      "type": "http",
+      "url": "https://q5ux3shjdf3hxtscuk3huzfsrq0llrta.lambda-url.us-east-1.on.aws/mcp"
     }
   }
 }

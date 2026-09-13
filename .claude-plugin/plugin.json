@@ -1,17 +1,21 @@
 {
   "name": "intelica-arca",
   "displayName": "Intelica ARCA",
-  "description": "ARCA (Automated Retrieval & Context Architecture) es la capa de conocimiento de Intelica sobre AWS. Consulta el grafo de conocimiento y la base documental antes de responder — recursos, reglas de security groups, conectividad entre cuentas, decisiones de arquitectura e incidentes pasados — y convierte conversaciones largas en documentacion estructurada, persistida como Pull Request con revision humana. Cubre las cuentas Portal, Interchange, Analytics, Intelica-Network y Audit.",
-  "version": "0.12.0",
+  "description": "ARCA (Automated Retrieval & Context Architecture) es la capa de conocimiento de Intelica sobre AWS, con dos fuentes que se complementan. El conocimiento documentado: el grafo y la base documental -- recursos, reglas de security groups, conectividad entre cuentas, decisiones de arquitectura e incidentes pasados -- que ademas convierte conversaciones largas en documentacion persistida como Pull Request con revision humana. Y el estado actual: consulta de solo lectura en vivo sobre las 11 cuentas AWS (inventario de cualquier servicio, clusters EKS y sus pods, logs y eventos de Kubernetes, limpieza de AMIs sin uso). Cubre las cuentas Portal (Prod/Dev/QA), Interchange (Prod/Dev), Analytics (Prod/Dev), Intelica-Network, Intelica-Devops, Log Archive y Audit.",
+  "version": "0.13.0",
   "keywords": [
     "aws",
+    "documentation",
+    "eks",
+    "infrastructure",
+    "intelica",
+    "inventory",
     "knowledge-base",
     "knowledge-graph",
+    "kubernetes",
     "rag",
-    "infrastructure",
-    "security-groups",
-    "documentation",
-    "intelica"
+    "read-only",
+    "security-groups"
   ],
   "author": {
     "name": "Intelica - Infrastructure"
