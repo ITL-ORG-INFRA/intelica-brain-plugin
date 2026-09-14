@@ -9,11 +9,10 @@
     "windows",
     "knowledge-base",
     "knowledge-graph",
+    "kubernetes",
     "rag",
-    "infrastructure",
-    "security-groups",
-    "documentation",
-    "intelica"
+    "read-only",
+    "security-groups"
   ],
   "author": {
     "name": "Intelica - Infrastructure"
