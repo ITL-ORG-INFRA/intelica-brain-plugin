@@ -22,6 +22,15 @@ resources involved, `traverse` their relevant relationships. Often the
 answer is already there — a security group's rules, what VPC something is
 in, what role it assumes.
 
+The knowledge base is partitioned by domain (`aws`, `database`,
+`windows`), so start from the domain the problem is actually in — a
+`DatabaseServer` or a `WindowsServer` involved in the problem means
+checking `database`/`windows` knowledge too, not just AWS. This doesn't
+change what this skill does: it's still AWS-CLI-first troubleshooting: a
+`RUNS_ON` hop from a `DatabaseServer` to its underlying `Resource` or
+`WindowsServer` is often what tells you which AWS command actually
+applies.
+
 If that fully answers it, answer directly and stop. Don't propose a command
 for something you can already see in the graph.
 

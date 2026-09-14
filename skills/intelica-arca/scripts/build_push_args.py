@@ -25,6 +25,7 @@ Usage:
     [
       {
         "title": "NAT Gateway cost spike",
+        "domain": "aws",
         "account": "Portal-Prod",
         "category_raw": "Analisis de costos",
         "summary": "Por que el NAT Gateway de Portal-Prod subio 4x en julio.",
@@ -67,7 +68,15 @@ REQUIRED_FIELDS = {
     "Decision": ("id", "title"),
     "Incident": ("id",),
     "Project": ("id",),
+    "DatabaseServer": ("id", "engine"),
+    "Database": ("id",),
+    "WindowsServer": ("id",),
+    "PatchReview": ("id", "date"),
 }
+
+# El conocimiento esta particionado por dominio; todo tema declara a cual
+# pertenece, y eso decide en que carpeta de `inbox/` va.
+DOMAINS = {"aws", "database", "windows"}
 
 # `Document` existe en el modelo pero se deriva del archivo, no se declara.
 DERIVED_ENTITY_TYPES = {"Document"}
@@ -84,6 +93,10 @@ RELATION_TYPES = {
     "AFFECTS",
     "MITIGATED_BY",
     "RELATED_TO",
+    "HOSTS_DATABASE",
+    "RUNS_ON",
+    "REVIEWED_IN",
+    "SAME_AS",
 }
 
 # `DOCUMENTED_IN` es automatica: la deriva el reconstructor del par
@@ -118,9 +131,23 @@ def slugify(title: str) -> str:
 # --- Validacion -------------------------------------------------------------
 
 def validate_topic(topic: dict, position: str, errors: list[str], warnings: list[str]) -> None:
-    for field in ("title", "account", "summary", "body"):
+    for field in ("title", "summary", "body"):
         if not str(topic.get(field) or "").strip():
             errors.append(f"{position}: falta `{field}`")
+
+    domain = topic.get("domain")
+    if domain not in DOMAINS:
+        errors.append(
+            f"{position}: `domain` tiene que ser uno de {', '.join(sorted(DOMAINS))}, "
+            f"llego {domain!r}. El conocimiento esta particionado por dominio y decide "
+            "en que carpeta de inbox/ se escribe."
+        )
+
+    # `account` es un concepto de AWS (una cuenta de la organizacion). Para
+    # database/windows no siempre aplica -- se exige solo en `aws`, donde ya
+    # es la convencion establecida de la carpeta por cuenta.
+    if domain == "aws" and not str(topic.get("account") or "").strip():
+        errors.append(f"{position}: falta `account` (dominio `aws`)")
 
     summary = str(topic.get("summary") or "")
     if "\n" in summary:
@@ -306,8 +333,10 @@ def yaml_inline_list(values) -> str:
 def render_graph_file(topic: dict, md_filename: str) -> str:
     lines = [
         f"documents: {yaml_scalar(md_filename)}",
-        f"account: {yaml_scalar(topic['account'])}",
+        f"domain: {yaml_scalar(topic['domain'])}",
     ]
+    if topic.get("account"):
+        lines.append(f"account: {yaml_scalar(topic['account'])}")
 
     entities = topic.get("entities") or []
     if entities:
@@ -340,7 +369,11 @@ def render_markdown(topic: dict, today: str, graph_filename: str) -> str:
     frontmatter = [
         "---",
         f"title: {yaml_scalar(topic['title'])}",
-        f"account: {yaml_scalar(topic['account'])}",
+        f"domain: {yaml_scalar(topic['domain'])}",
+    ]
+    if topic.get("account"):
+        frontmatter.append(f"account: {yaml_scalar(topic['account'])}")
+    frontmatter += [
         f"category_raw: {yaml_scalar(topic.get('category_raw', ''))}",
         "category_confirmed: false",
         f"date: {today}",
@@ -398,13 +431,18 @@ def main() -> int:
     files = []
     for topic in topics:
         slug = slugify(topic["title"])
-        account = topic.get("account") or "no-account"
-        if account in ("N/A", "n/a", ""):
-            account = "no-account"
+        domain = topic["domain"]
+        account = topic.get("account") or ""
+        if account in ("N/A", "n/a"):
+            account = ""
 
         md_filename = f"{today}-{slug}.md"
         graph_filename = f"{today}-{slug}.graph.yaml"
-        directory = f"inbox/{account}"
+        # `aws` mantiene la convencion existente de una subcarpeta por cuenta
+        # (inbox/aws/<Cuenta>/...). database/windows no tienen ese concepto
+        # todavia, asi que van directo a inbox/<dominio>/ salvo que el tema
+        # declare una cuenta igual.
+        directory = f"inbox/{domain}/{account}" if account else f"inbox/{domain}"
         commit_message = topic.get("commit_message", f"docs: add {slug}")
 
         files.append(

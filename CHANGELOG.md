@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.13.0 - 2026-09-01
+
+- **Conocimiento particionado por dominio**: `aws`, `database`, `windows`.
+  Mismo repo y mismo grafo — las relaciones cruzadas entre dominios (una
+  base de datos que corre en una EC2, un servidor Windows que tambien es
+  una instancia AWS) siguen existiendo, solo cambia como se organizan los
+  documentos y el indice.
+- `KNOWLEDGE_MODEL.md` (en `intelica-brain-ia`) suma la propiedad `domain`
+  y los tipos `DatabaseServer`, `Database`, `WindowsServer`, `PatchReview`,
+  mas las relaciones `HOSTS_DATABASE`, `RUNS_ON`, `REVIEWED_IN`, `SAME_AS`.
+- `build_push_args.py` valida `domain` (nuevo campo requerido) y escribe
+  en `inbox/<domain>/...` — `aws` mantiene la subcarpeta por cuenta
+  existente, `database`/`windows` empiezan planos.
+- `intelica-arca` clasifica el dominio de cada tema antes de redactar
+  (paso nuevo), separando en varios documentos si la conversacion mezcla
+  dominios.
+- `intelica-arca-recall` y `intelica-arca-diagnose` amplian sus
+  descripciones y ejemplos a los tres dominios, y `recall` rutea primero
+  al `INDEX.md` del dominio en vez de siempre ir a la raiz.
+
 ## 0.12.0 - 2026-08-20
 
 - **`KNOWLEDGE_MODEL.md` se mudó a `intelica-brain-ia`**, a la raíz del repo

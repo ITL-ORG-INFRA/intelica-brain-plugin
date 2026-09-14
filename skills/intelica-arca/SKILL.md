@@ -1,6 +1,6 @@
 ---
 name: intelica-arca
-description: "Closes out a conversation: consolidates everything intelica-arca-capture staged locally during it, drafts the final .md documents plus their graph fragments, and pushes them as a single Pull Request to ITL-ORG-INFRA/intelica-brain-ia via intelica-brain-mcp — all in one pass. Invoke with '/intelica-arca' (add '--full' to review the drafts before pushing). Works whether the conversation was long (several capture fragments) or short (none — it extracts from the live conversation instead). Does NOT activate on conversation topic, only on explicit invocation. Never merges the PR: that stays a human step in GitHub."
+description: "Closes out a conversation: consolidates everything intelica-arca-capture staged locally during it, drafts the final .md documents plus their graph fragments, and pushes them as a single Pull Request to ITL-ORG-INFRA/intelica-brain-ia via intelica-brain-mcp — all in one pass. Invoke with '/intelica-arca' (add '--full' to review the drafts before pushing). Works whether the conversation was long (several capture fragments) or short (none — it extracts from the live conversation instead). Covers three knowledge domains — aws, database, windows — and classifies which one each document belongs to before drafting. Does NOT activate on conversation topic, only on explicit invocation. Never merges the PR: that stays a human step in GitHub."
 ---
 
 # Intelica ARCA
@@ -47,6 +47,21 @@ don't merge two unrelated ones to save effort.
 passing or recurred across the conversation. Recurring ones are usually the
 subject; one-offs are usually context.
 
+## Step 2.5 — Classify each topic's domain
+
+The knowledge base is partitioned into three domains: `aws`, `database`,
+`windows`. Every document needs exactly one before it can be drafted —
+it decides which `inbox/<domain>/...` folder it lands in.
+
+- One topic, one clear domain → tag it and move on.
+- A conversation that mixes domains (e.g. an AWS EC2 discussion that
+  turns into a SQL Server tuning discussion) → split into one document
+  per domain, per the grouping rule in Step 2. Don't force a mixed topic
+  into a single domain just to avoid a second file.
+- Genuinely ambiguous → ask the user once, before drafting, with the
+  three domains as the options. Don't guess and don't draft first and
+  reclassify later.
+
 ## Step 3 — Draft the documents
 
 Write the prose in **Spanish**. A human reviews and merges this document,
@@ -88,13 +103,19 @@ document that doesn't exist.
 
   Entity types, and their required fields beyond `id`:
   `Account` · `Resource` (needs `resource_type`) · `Finding` (needs
-  `finding_type`) · `Decision` (needs `title`) · `Incident` · `Project`.
+  `finding_type`) · `Decision` (needs `title`) · `Incident` · `Project` ·
+  `DatabaseServer` (needs `engine`) · `Database` · `WindowsServer` ·
+  `PatchReview` (needs `date`).
   There is no `Person` type — who did or said something is not modelled,
   by design. `Document` and `DOCUMENTED_IN` are derived, never declared.
 
   Relations: `BELONGS_TO` · `HAS_SECURITY_GROUP` · `IN_VPC` · `IN_SUBNET` ·
   `ASSUMES_ROLE` · `ENCRYPTED_BY` · `ATTACHED_TO` · `REGISTERED_ON` ·
-  `AFFECTS` · `MITIGATED_BY` · `RELATED_TO`.
+  `AFFECTS` · `MITIGATED_BY` · `RELATED_TO` · `HOSTS_DATABASE` ·
+  `RUNS_ON` (a `DatabaseServer` on a `Resource` or `WindowsServer` — this
+  is what connects the `database` domain to `aws` or `windows`) ·
+  `REVIEWED_IN` · `SAME_AS` (a `WindowsServer` that is also an EC2
+  `Resource` — the two entities stay separate, linked by this relation).
 
   **On `Incident`, `date` is when the incident STARTED** — not when it was
   detected, not when you're writing this. Those can be weeks apart, and
@@ -115,7 +136,7 @@ the deterministic parts (real date, slugs, branch name, paths):
 ```bash
 python3 scripts/build_push_args.py <<'EOF'
 [{
-  "title": "...", "account": "...", "category_raw": "...",
+  "title": "...", "domain": "aws", "account": "...", "category_raw": "...",
   "summary": "...", "tags": ["..."], "body": "<markdown prose>",
   "entities": [{"type": "Resource", "id": "i-0abc", "resource_type": "ec2_instance"}],
   "relations": [{"from": "i-0abc", "type": "BELONGS_TO", "to": "Portal-Prod"}],
@@ -123,6 +144,12 @@ python3 scripts/build_push_args.py <<'EOF'
 }]
 EOF
 ```
+
+`domain` is required (`aws`, `database`, or `windows` — from Step 2.5) and
+decides the folder: `inbox/aws/<account>/...` keeps the existing
+per-account layout, `inbox/database/...` and `inbox/windows/...` are flat
+unless the topic also carries an `account`. `account` itself stays
+required only for `domain: aws`.
 
 **If it exits non-zero, nothing was generated.** It prints one line per
 problem: an entity type that isn't in the model, a missing

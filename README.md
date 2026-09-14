@@ -1,10 +1,11 @@
 # Intelica ARCA
 
 **ARCA** — Automated Retrieval & Context Architecture. Plugin de Claude
-Code/Desktop que es la capa de conocimiento de Intelica sobre AWS:
-consulta lo ya documentado antes de responder, y convierte conversaciones
-largas en documentacion persistida como Pull Request en
-`ITL-ORG-INFRA/intelica-brain-ia`.
+Code/Desktop que es la capa de conocimiento de infraestructura de
+Intelica, particionada en tres dominios (`aws`, `database`, `windows`)
+sobre un solo grafo: consulta lo ya documentado antes de responder, y
+convierte conversaciones largas en documentacion persistida como Pull
+Request en `ITL-ORG-INFRA/intelica-brain-ia`.
 
 ```
 skills/

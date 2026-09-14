@@ -1,6 +1,6 @@
 ---
 name: intelica-arca-capture
-description: "Captures what matters from the conversation so far into local staging, right before Claude Code compacts the context. Triggered by the PreCompact hook — NOT invoked by the user, and never activates on conversation topic. Extracts facts, decisions and typed entities (with exact AWS resource IDs) while the full detail is still in context, because compaction summarizes for continuity and drops precisely those identifiers. Writes to ~/.intelica-arca/sessions/<session_id>/ via scripts/write_capture.py. Staging only: nothing reaches GitHub here — that is intelica-arca's job at the end of the chat."
+description: "Captures what matters from the conversation so far into local staging, right before Claude Code compacts the context. Triggered by the PreCompact hook — NOT invoked by the user, and never activates on conversation topic. Extracts facts, decisions and typed entities (with exact identifiers — AWS resources, database servers and instances, Windows servers and patch reviews) while the full detail is still in context, because compaction summarizes for continuity and drops precisely those identifiers. Covers all three knowledge domains: aws, database, windows. Writes to ~/.intelica-arca/sessions/<session_id>/ via scripts/write_capture.py. Staging only: nothing reaches GitHub here — that is intelica-arca's job at the end of the chat."
 user-invocable: false
 ---
 
@@ -48,13 +48,15 @@ Use the exact identifier, never a description. `i-0abc123`, not "the
 Denver instance". `sg-04aac9e78d6520b80`, not "the SQL security group".
 
 This is the whole point: those IDs already exist in the knowledge graph
-from the AWS inventory. Matching them exactly means this conversation
-attaches to the **same node** instead of creating an island. A
-paraphrase creates a duplicate that nothing can join.
+from the AWS inventory (or from an earlier database/Windows document).
+Matching them exactly means this conversation attaches to the **same
+node** instead of creating an island. A paraphrase creates a duplicate
+that nothing can join.
 
 Types available: `Account`, `Resource` (with `resource_type`), `Finding`,
-`Decision`, `Incident`, `Project`. There is no `Person` type — don't
-model who did or said something.
+`Decision`, `Incident`, `Project`, `DatabaseServer` (with `engine`),
+`Database`, `WindowsServer`, `PatchReview`. There is no `Person` type —
+don't model who did or said something.
 
 On an `Incident`, `date` is when it **started**, not when it was noticed.
 If the conversation says something had been failing since a date before

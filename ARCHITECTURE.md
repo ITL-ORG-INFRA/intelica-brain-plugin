@@ -7,7 +7,11 @@ referencia explícitamente.
 ## Qué es esto
 
 **ARCA** — Automated Retrieval & Context Architecture. La capa de
-conocimiento de Intelica sobre AWS, como plugin de Claude Code/Desktop.
+conocimiento de infraestructura de Intelica, como plugin de Claude
+Code/Desktop. Particionada en tres dominios — `aws`, `database`,
+`windows` — sobre un solo repo y un solo grafo, porque las relaciones
+cruzadas entre dominios (una base de datos que corre en una EC2, un
+servidor Windows que tambien es una instancia AWS) son parte del valor.
 Dos lados: consultar lo ya documentado antes de responder, y convertir
 conversaciones en documentación persistida como PR en
 `ITL-ORG-INFRA/intelica-brain-ia`.
@@ -193,8 +197,12 @@ exacto.
 ## Convenciones
 
 - Rama: `docs/brain-{fecha-real}-{identificador}-{sufijo}`.
-- Ruta: `inbox/{account}/{fecha}-{slug}.md` (+ su `.graph.yaml` hermano).
-  `inbox/no-account/...` si no aplica cuenta.
+- Ruta: `inbox/{domain}/{account}/{fecha}-{slug}.md` (+ su `.graph.yaml`
+  hermano). El conocimiento esta particionado en tres dominios (`aws`,
+  `database`, `windows`); `{account}` solo aplica en `aws` (sigue la
+  convencion existente de una subcarpeta por cuenta) — `database` y
+  `windows` van directo a `inbox/{domain}/...` salvo que el tema declare
+  una cuenta igual.
 - Remitente del PR: lo resuelve el servidor desde el token personal
   autenticado — no es un parámetro que mande el skill, y nunca se pide
   email ni dato personal. (Antes era el valor fijo
