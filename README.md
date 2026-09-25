@@ -72,7 +72,7 @@ que no se puede scriptear.
 ## Requisito: el servidor MCP
 
 Este plugin **no reemplaza** el servidor MCP `intelica-brain-mcp`
-(repo separado: `ddvloayza/intelica-brain-mcp`) — lo necesita. `intelica-arca`
+(repo separado: `ITL-ORG-INFRA/intelica-arca-mcp`) — lo necesita. `intelica-arca`
 usa `push_knowledge` para persistir en GitHub, y `intelica-arca-recall` usa
 `find_entity` / `traverse` / `find_documents` / `get_file_contents` para
 consultar.
@@ -112,7 +112,7 @@ Una vez que este contenido este pusheado a un repo de GitHub:
 ```
 
 Reemplaza `<owner>/<nombre-del-repo>` por el repo real donde vive esto
-(por ejemplo `ddvloayza/intelica-brain-plugin`).
+(por ejemplo `ITL-ORG-INFRA/intelica-brain-plugin`).
 
 ## El hook de captura
 

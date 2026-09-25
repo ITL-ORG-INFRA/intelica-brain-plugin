@@ -16,7 +16,7 @@ Dos lados: consultar lo ya documentado antes de responder, y convertir
 conversaciones en documentación persistida como PR en
 `ITL-ORG-INFRA/intelica-brain-ia`.
 
-No incluye el servidor MCP — eso vive en `ddvloayza/intelica-brain-mcp`
+No incluye el servidor MCP — eso vive en `ITL-ORG-INFRA/intelica-arca-mcp`
 (Lambda + Function URL). Este plugin son los Skills que usan sus tools.
 
 ## Los tres momentos
