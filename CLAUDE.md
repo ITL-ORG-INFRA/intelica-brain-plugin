@@ -11,7 +11,7 @@ servidores vive aparte, en `ITL-ORG-INFRA/intelica-arca-mcp`.
 .claude-plugin/plugin.json       metadatos y version
 .claude-plugin/marketplace.json  lo que lee el cliente para ofrecer actualizaciones
 .mcp.json                        los dos servidores MCP que el plugin declara
-skills/                          4 skills de ARCA
+skills/                          5 skills: cerebro es la puerta, las 4 de ARCA el resto
 agents/cerebro.md                el agente que cruza el grafo con el estado en vivo
 hooks/                           PreCompact, que dispara la captura
 ```
@@ -53,6 +53,7 @@ que solo describe qué hace la skill se dispara mal.
 
 | Skill | Se activa |
 |---|---|
+| `cerebro` | **Sola, por tema**: cualquier pregunta que necesite consultar las cuentas o el grafo. Es la voz con la que se responde |
 | `intelica-arca-recall` | Sola, por tema: preguntas sobre infraestructura ya documentada |
 | `intelica-arca-diagnose` | Un problema activo. Consulta en vivo con las tools de `intelica-aws` |
 | `intelica-arca-capture` | Por el hook PreCompact. Nunca a mano |
@@ -61,6 +62,12 @@ que solo describe qué hace la skill se dispara mal.
 `diagnose` dejó de proponer comandos para que alguien los pegue: ahora consulta
 directo. Si el servidor `intelica-aws` no está conectado, vuelve al modo viejo
 y lo dice.
+
+`cerebro` y `recall` se solapan a propósito en la zona documental: las dos
+empiezan por el grafo. La diferencia es el alcance — `cerebro` sigue hacia el
+estado actual y responde con identidad; `recall` se queda en lo documentado.
+Si en la práctica se pisan de forma molesta, la que hay que acotar es
+`recall`, no `cerebro`.
 
 ## El agente cerebro
 
