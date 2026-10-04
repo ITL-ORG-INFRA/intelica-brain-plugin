@@ -29,6 +29,9 @@ was staged. That's normal for a short chat: extract directly from the
 conversation you're in, using the same shape the script would have
 returned, and continue.
 
+`reports` lists the HTML reports staged across compactions. Add any
+generated after the last one — they're still in the live conversation.
+
 ## Step 2 — Resolve what the script can't
 
 This is the part that needs judgment, and it's why the facts come with
@@ -128,6 +131,18 @@ document that doesn't exist.
   from the graph. If the start is unknown, use the earliest date the
   evidence supports and say in the prose that it's approximate.
 
+## Step 3.5 — Attach the reports
+
+Each HTML report generated in this conversation with the Intelica template
+goes with the topic it documents: set that topic's `report_file` to the
+report's local path. One report per topic. The report goes to S3, not to
+the repo; the `.md` points to it, and that's how anyone finds it later.
+
+Leave a report out when it doesn't document any of the topics — for
+example, one about the tooling itself rather than the infrastructure. A
+report with no `.md` naming it is unreachable, so attaching it to an
+unrelated topic just to upload it is worse than leaving it local.
+
 ## Step 4 — Generate and push
 
 One script validates the drafts, writes both files per topic, and computes
@@ -140,6 +155,7 @@ python3 scripts/build_push_args.py <<'EOF'
   "summary": "...", "tags": ["..."], "body": "<markdown prose>",
   "entities": [{"type": "Resource", "id": "i-0abc", "resource_type": "ec2_instance"}],
   "relations": [{"from": "i-0abc", "type": "BELONGS_TO", "to": "Portal-Prod"}],
+  "report_file": "/Users/.../salidas/2026-10-02/....html",
   "commit_message": "docs: ..."
 }]
 EOF
@@ -162,6 +178,21 @@ that reaches `graph.json` is simply unreachable by every later query.
 Warnings (`AVISO`) don't block. A relation pointing at an entity declared
 in another document is normal and expected.
 
+**Upload the reports first**, one per entry in the script's `reports`:
+
+1. `upload_report(path=<key>)`. It returns a signed URL and a `curl`.
+2. Run that `curl` replacing `<archivo.html>` with the entry's `file`,
+   quoted. The HTML goes from disk straight to S3 — never paste its
+   content into a tool call, and never put it in `files`.
+3. If `upload_report` fails with `ReportExists`, call
+   `get_report_url(path=<key>)`: if `size_bytes` matches the entry's,
+   it's this same close retried — move on. If it doesn't, stop and tell
+   the user; a published report isn't overwritten.
+
+Any other failure → stop before pushing and say which report failed. The
+`.md` names the report's key, so pushing it without the upload leaves a
+reference to nothing.
+
 Then call `push_knowledge` with `base_branch: "main"` and the script's
 `new_branch_name` / `files`, unchanged.
 
@@ -169,11 +200,12 @@ Don't pass a sender. The server derives it from the authenticated personal
 token — it isn't a parameter. Never ask the user for an email or any other
 personal data.
 
-With `--full`: show the drafted files and wait for confirmation before
-pushing. Without it: push silently and report only the PR link.
+With `--full`: show the drafted files and the reports to upload, and wait
+for confirmation before uploading or pushing. Without it: do both silently
+and report only the PR link.
 
 If `intelica-brain-mcp` isn't loaded: write the files locally, say so, and
-don't block.
+don't block. The reports stay where they are.
 
 ## Rules
 
