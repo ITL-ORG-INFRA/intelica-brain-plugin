@@ -15,6 +15,12 @@
   compactación pierde. `consolidate.py` los junta por ruta.
 - `intelica-arca-recall` menciona el reporte y da el link con
   `get_report_url` solo si lo piden; nunca lee el HTML para responder.
+- **El `session_id` lo pone Claude Code**: `intelica-arca` y
+  `intelica-arca-capture` usan `${CLAUDE_SESSION_ID}`, que se sustituye al
+  cargar el skill. Antes el cierre tenía que encontrar el id en la
+  conversación, y después de dos compactaciones el mensaje del hook que lo
+  traía ya estaba resumido: con un id equivocado, `consolidate.py` devuelve
+  `fragment_count: 0` sin error y se pierde todo lo capturado.
 - Requiere las tools `upload_report` y `get_report_url` de
   `intelica-arca-mcp`, y el permiso de `add-reports-bucket-permission.sh`.
 

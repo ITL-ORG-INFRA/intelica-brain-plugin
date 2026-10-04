@@ -13,11 +13,15 @@ design.
 
 ## Step 1 — Consolidate the staged fragments
 
-Get the `session_id` for this conversation, then:
-
 ```bash
-python3 scripts/consolidate.py --session <session_id>
+python3 scripts/consolidate.py --session ${CLAUDE_SESSION_ID}
 ```
+
+Claude Code fills in the session id when it loads this skill — use the
+command exactly as written. Don't look for the id in the conversation:
+after a couple of compactions the hook message that carried it has been
+summarized away, and a guessed id returns `fragment_count: 0` with no
+error, silently dropping everything that was staged.
 
 The script deduplicates entities by ID (merging their properties),
 deduplicates relations, and returns every fact tagged with the fragment it
