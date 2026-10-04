@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.17.0 - 2026-10-04
+
+- **Los reportes HTML van a S3**, a `reportes/` del bucket de artefactos de
+  ARCA. En el repo queda el `.md`, con `reporte: <key>` en el frontmatter:
+  es lo que se indexa, y lo único por lo que se encuentra el reporte.
+- `build_push_args.py` acepta `report_file` por tema: valida que el HTML
+  exista, deriva la key de la misma fecha y slug que el `.md`, y la devuelve
+  en `reports` aparte de `files`.
+- `intelica-arca` sube cada reporte antes del PR con `upload_report` y el
+  `curl` que devuelve: el HTML va del disco a S3 sin pasar por el modelo,
+  que antes lo tenía que reescribir entero (5k a 40k tokens por reporte).
+- `intelica-arca-capture` guarda la ruta de los reportes generados, que la
+  compactación pierde. `consolidate.py` los junta por ruta.
+- `intelica-arca-recall` menciona el reporte y da el link con
+  `get_report_url` solo si lo piden; nunca lee el HTML para responder.
+- Requiere las tools `upload_report` y `get_report_url` de
+  `intelica-arca-mcp`, y el permiso de `add-reports-bucket-permission.sh`.
+
 ## 0.13.0 - 2026-09-01
 
 - **Conocimiento particionado por dominio**: `aws`, `database`, `windows`.

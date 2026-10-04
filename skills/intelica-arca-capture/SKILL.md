@@ -38,6 +38,11 @@ conversation.
 - **`relations`** — how those entities connect.
 - **`accounts`** — the AWS accounts involved.
 - **`open_questions`** — what was left unresolved.
+- **`reports`** — HTML reports generated so far with the Intelica template
+  (saved under `salidas/<date>/`): `{"path": "<absolute path>", "about":
+  "<one line: what it shows>"}`. The absolute path, exactly as written to
+  disk. After compaction this is the only place the path survives, and
+  `/intelica-arca` uploads each report from it at the end of the chat.
 
 Skip greetings, tool output that led nowhere, repeated content, and
 anything already captured in an earlier fragment of this same session.
@@ -78,7 +83,10 @@ python3 scripts/write_capture.py --session <session_id> <<'EOF'
   "relations": [
     {"from": "i-0abc123", "type": "BELONGS_TO", "to": "Portal-Prod"}
   ],
-  "open_questions": ["..."]
+  "open_questions": ["..."],
+  "reports": [
+    {"path": "/Users/.../salidas/2026-10-02/plan-continuidad-caida-eu-south-2.html", "about": "..."}
+  ]
 }
 EOF
 ```
@@ -95,4 +103,5 @@ sequence number, the timestamp. Don't compute those.
 - Only output: one line confirming the fragment was written. Keep it
   short; the user didn't ask for this, it fired on its own.
 - If the extraction has nothing worth saving (a short exchange with no
-  findings), say so and write nothing. An empty fragment is noise.
+  findings), say so and write nothing. An empty fragment is noise. A
+  generated report is always worth a fragment, even with nothing else.

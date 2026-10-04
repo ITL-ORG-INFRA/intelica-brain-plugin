@@ -43,14 +43,22 @@ Usage:
     ]
     EOF
 
-On success prints JSON on stdout, ready to pass straight to push_knowledge:
-    {"new_branch_name": "...", "files": [{"path", "content", "commit_message"}, ...]}
+A topic can carry `report_file`: the local path of an HTML report generated
+in the conversation. The report goes to S3, not to the repo -- the script
+derives its key from the same date and slug as the `.md`, puts it in the
+frontmatter as `reporte:`, and lists it under `reports` for the upload.
+
+On success prints JSON on stdout. `new_branch_name` and `files` go straight to
+push_knowledge; `reports` are uploaded first, one upload_report each:
+    {"new_branch_name": "...", "files": [{"path", "content", "commit_message"}, ...],
+     "reports": [{"key", "file", "size_bytes"}, ...]}
 
 On a validation error prints nothing on stdout and exits 1, so a broken draft
 can never be pushed by accident. Fix what stderr reports and run it again.
 """
 
 import json
+import os
 import re
 import secrets
 import sys
@@ -114,6 +122,16 @@ KNOWN_RESOURCE_TYPES = {
     "sns_topic", "transit_gateway", "vpc_endpoint",
 }
 
+# Lo que upload_report acepta como segmento de cuenta en la key de S3. Se
+# valida aca para que un reporte no se rechace recien al subirlo, con el
+# borrador ya armado.
+ACCOUNT_IN_KEY = re.compile(r"^[A-Za-z0-9-]+$")
+
+# Un reporte de la template pesa entre 20 y 150 KB. Algo de varios MB no es
+# un reporte: es un HTML con datos o imagenes embebidas que no tienen que
+# terminar en el bucket por accidente.
+MAX_REPORT_BYTES = 5 * 1024 * 1024
+
 IP_LIKE = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 SNAKE_CASE = re.compile(r"^[a-z0-9]+(_[a-z0-9]+)*$")
 
@@ -162,8 +180,44 @@ def validate_topic(topic: dict, position: str, errors: list[str], warnings: list
             "elegir este documento desde INDEX.md -- no hay busqueda semantica."
         )
 
+    validate_report(topic, position, errors)
+
     declared_ids = validate_entities(topic, position, errors, warnings)
     validate_relations(topic, position, declared_ids, errors, warnings)
+
+
+def report_account(topic: dict) -> str:
+    account = str(topic.get("account") or "").strip()
+    return "" if account in ("N/A", "n/a") else account
+
+
+def validate_report(topic: dict, position: str, errors: list[str]) -> None:
+    report = topic.get("report_file")
+    if not report:
+        return
+    path = os.path.expanduser(str(report))
+    if not path.lower().endswith(".html"):
+        errors.append(f"{position}: `report_file` tiene que ser un .html, llego {report!r}")
+        return
+    if not os.path.isfile(path):
+        errors.append(
+            f"{position}: `report_file` no existe: {path}. Tiene que ser la ruta "
+            "local del HTML generado en la conversacion (salidas/<fecha>/...)."
+        )
+        return
+    size = os.path.getsize(path)
+    if size > MAX_REPORT_BYTES:
+        errors.append(
+            f"{position}: `report_file` pesa {size // 1024} KB, mas de "
+            f"{MAX_REPORT_BYTES // (1024 * 1024)} MB. Un reporte de la template no "
+            "llega a eso: revisar si tiene datos o imagenes embebidas."
+        )
+    account = report_account(topic)
+    if account and not ACCOUNT_IN_KEY.match(account):
+        errors.append(
+            f"{position}: `account: {account}` no sirve como segmento de la key del "
+            "reporte en S3 (solo letras, numeros y guiones)."
+        )
 
 
 def validate_entities(
@@ -365,7 +419,7 @@ def render_graph_file(topic: dict, md_filename: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_markdown(topic: dict, today: str, graph_filename: str) -> str:
+def render_markdown(topic: dict, today: str, graph_filename: str, report_key: str) -> str:
     frontmatter = [
         "---",
         f"title: {yaml_scalar(topic['title'])}",
@@ -380,6 +434,10 @@ def render_markdown(topic: dict, today: str, graph_filename: str) -> str:
         f"summary: {yaml_scalar(topic['summary'])}",
         f"tags: {yaml_inline_list(topic.get('tags') or [])}",
         f"graph: {yaml_scalar(graph_filename)}",
+    ]
+    if report_key:
+        frontmatter.append(f"reporte: {yaml_scalar(report_key)}")
+    frontmatter += [
         "---",
         "",
         "",
@@ -429,12 +487,11 @@ def main() -> int:
     branch = f"docs/brain-{today}-{identifier}-{suffix}"
 
     files = []
+    reports = []
     for topic in topics:
         slug = slugify(topic["title"])
         domain = topic["domain"]
-        account = topic.get("account") or ""
-        if account in ("N/A", "n/a"):
-            account = ""
+        account = report_account(topic)
 
         md_filename = f"{today}-{slug}.md"
         graph_filename = f"{today}-{slug}.graph.yaml"
@@ -445,10 +502,20 @@ def main() -> int:
         directory = f"inbox/{domain}/{account}" if account else f"inbox/{domain}"
         commit_message = topic.get("commit_message", f"docs: add {slug}")
 
+        # Misma forma que la ruta del .md, con reportes/ en vez de inbox/: el
+        # par se reconoce a simple vista, y la key no la inventa el modelo.
+        report_key = ""
+        if topic.get("report_file"):
+            report_dir = f"reportes/{domain}/{account}" if account else f"reportes/{domain}"
+            report_key = f"{report_dir}/{today}-{slug}.html"
+            report_path = os.path.abspath(os.path.expanduser(str(topic["report_file"])))
+            reports.append({"key": report_key, "file": report_path,
+                            "size_bytes": os.path.getsize(report_path)})
+
         files.append(
             {
                 "path": f"{directory}/{md_filename}",
-                "content": render_markdown(topic, today, graph_filename),
+                "content": render_markdown(topic, today, graph_filename, report_key),
                 "commit_message": commit_message,
             }
         )
@@ -461,9 +528,10 @@ def main() -> int:
                 }
             )
 
-    json.dump({"new_branch_name": branch, "files": files}, sys.stdout, ensure_ascii=False)
-    print(f"\nOK: {len(files)} archivo(s) generado(s) para {len(topics)} tema(s).",
-          file=sys.stderr)
+    json.dump({"new_branch_name": branch, "files": files, "reports": reports},
+              sys.stdout, ensure_ascii=False)
+    print(f"\nOK: {len(files)} archivo(s) y {len(reports)} reporte(s) para "
+          f"{len(topics)} tema(s).", file=sys.stderr)
     return 0
 
 

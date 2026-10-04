@@ -107,10 +107,18 @@ Say which document the answer came from, so the user can open it for the
 full context. If the sources didn't actually cover the question, say so
 rather than stretching them.
 
+A document whose frontmatter has `reporte: reportes/...html` has an HTML
+report in S3 — the visual version made with the Intelica template. Mention
+it in one line. Only when the user wants to see it, call
+`get_report_url(path=<that value>)` and give them the link (it expires in
+an hour). Never fetch the HTML to answer: the `.md` already has the
+content, and the report costs ten times the tokens for the same facts.
+
 ## Rules
 
 - Read-only: never `create_branch`, `create_or_update_file`,
-  `create_pull_request`, or `push_knowledge` from this skill.
+  `create_pull_request`, `push_knowledge`, or `upload_report` from this
+  skill.
 - At most 2 documents per question — that's the token budget this whole
   design is built around. Graph calls are cheap and don't count.
 - Never invent a citation. Empty result → say so plainly.

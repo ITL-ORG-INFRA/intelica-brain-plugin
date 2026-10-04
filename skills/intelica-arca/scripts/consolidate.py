@@ -108,7 +108,7 @@ def main() -> int:
             "note": "Sin fragmentos de captura — esta conversacion no se compacto. "
                     "Extraer directamente de la conversacion actual.",
             "accounts": [], "facts": [], "entities": [], "relations": [],
-            "open_questions": [],
+            "open_questions": [], "reports": [],
         }, sys.stdout, ensure_ascii=False, indent=2)
         return 0
 
@@ -123,6 +123,9 @@ def main() -> int:
     open_questions: list[dict] = []
     summaries: list[dict] = []
     accounts: list[str] = []
+    # Por ruta: el mismo HTML se puede capturar en dos compactaciones si se
+    # siguio editando. Gana la ultima descripcion, como con los hechos.
+    reports: dict[str, dict] = {}
 
     for fragment in fragments:
         seq = fragment.get("sequence")
@@ -132,6 +135,9 @@ def main() -> int:
             facts.append({"sequence": seq, "fact": fact})
         for question in fragment.get("open_questions") or []:
             open_questions.append({"sequence": seq, "question": question})
+        for report in fragment.get("reports") or []:
+            if isinstance(report, dict) and report.get("path"):
+                reports[report["path"]] = {**report, "sequence": seq}
         for account in fragment.get("accounts") or []:
             if account not in accounts:
                 accounts.append(account)
@@ -154,6 +160,7 @@ def main() -> int:
         "entities": entities,
         "relations": relations,
         "open_questions": open_questions,
+        "reports": list(reports.values()),
         "note": "Los hechos vienen con su numero de fragmento: si dos se "
                 "contradicen, el de secuencia mayor es el posterior en la "
                 "conversacion. Resolverlo es criterio del skill, no del script.",
