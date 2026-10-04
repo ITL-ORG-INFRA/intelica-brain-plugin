@@ -16,11 +16,13 @@ but drops exact identifiers, edge cases and the reasoning behind decisions
 — which is exactly the material worth documenting. This runs while all of
 that is still in context.
 
-## Input from the hook
+## Session id
 
-The hook passes the `session_id`. It's required — without it the fragment
-can't be filed under the right conversation. If it isn't in the hook
-message, say so and skip; don't guess one.
+The command below already carries this session's id: Claude Code fills it
+in when it loads this skill, and `/intelica-arca` reads the fragments back
+with the same value. Use the command as written. The hook message carries
+the same id; if the two ever differ, use the one in the command and say so
+in one line.
 
 ## What to extract
 
@@ -71,7 +73,7 @@ between the two is usually part of what matters.
 ## Write the fragment
 
 ```bash
-python3 scripts/write_capture.py --session <session_id> <<'EOF'
+python3 scripts/write_capture.py --session ${CLAUDE_SESSION_ID} <<'EOF'
 {
   "summary": "...",
   "accounts": ["Portal-Prod"],
