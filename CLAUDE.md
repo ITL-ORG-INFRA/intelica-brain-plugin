@@ -11,8 +11,9 @@ servidores vive aparte, en `ITL-ORG-INFRA/intelica-arca-mcp`.
 .claude-plugin/plugin.json       metadatos y version
 .claude-plugin/marketplace.json  lo que lee el cliente para ofrecer actualizaciones
 .mcp.json                        los dos servidores MCP que el plugin declara
-skills/                          5 skills: cerebro es la puerta, las 4 de ARCA el resto
+skills/                          6 skills: cerebro es la puerta, las 5 de ARCA el resto
 agents/cerebro.md                el agente que cruza el grafo con el estado en vivo
+evals/                           casos de `claude plugin eval` para medir a cerebro
 hooks/                           PreCompact, que dispara la captura
 ```
 
@@ -49,13 +50,14 @@ frontmatter es lo que decide si se activa: tiene que decir *cuándo* usarla y
 *cuándo no*, con los términos que alguien usaría al pedirlo. Un `description`
 que solo describe qué hace la skill se dispara mal.
 
-## Las cuatro skills, y cuándo entra cada una
+## Las skills, y cuándo entra cada una
 
 | Skill | Se activa |
 |---|---|
 | `cerebro` | **Sola, por tema**: cualquier pregunta que necesite consultar las cuentas o el grafo. Es la voz con la que se responde |
 | `intelica-arca-recall` | Sola, por tema: preguntas sobre infraestructura ya documentada |
 | `intelica-arca-diagnose` | Un problema activo. Consulta en vivo con las tools de `intelica-aws` |
+| `intelica-arca-finops` | Sola, por tema: costos, licencias, quién usa qué. Recetas y facturación ya verificada |
 | `intelica-arca-capture` | Por el hook PreCompact. Nunca a mano |
 | `intelica-arca` | Solo con `/intelica-arca`. Cierra la conversación en un PR |
 
@@ -80,6 +82,18 @@ No declara `tools` a propósito: el prefijo de las tools MCP cambia según cómo
 esté conectado el servidor (vía plugin, vía conector personalizado), así que
 una lista fija lo dejaría sin herramientas en la mitad de los casos. La
 barrera real no es esa lista — el rol detrás tiene un `Deny` de IAM.
+
+Corre con `opus` y tiene `memory: user`: un directorio propio en
+`~/.claude/agent-memory/cerebro/` por persona, para lo que aprende operando
+las tools. Lo que le sirve al equipo sigue yendo al grafo. Precarga
+`intelica-arca-recall` (el manual del grafo) e `intelica-arca-finops`; no
+precarga `diagnose`, que repite su propio método y le sumaría unos 1.300
+tokens a cada arranque. En un plugin se ignoran `permissionMode`, `hooks`,
+`mcpServers` e `initialPrompt`: no los agregues ahí.
+
+**Antes y después de tocar su prompt, corré los evals** (`evals/README.md`,
+requiere Claude Code 2.1.269+). Cada error verificable de cerebro es un caso
+nuevo.
 
 ## Después de cambiar algo
 

@@ -230,7 +230,11 @@ intelica-brain-plugin/
 │   │       ├── consolidate.py
 │   │       └── build_push_args.py
 │   ├── intelica-arca-recall/   # consulta: grafo + documentos
-│   └── intelica-arca-diagnose/ # troubleshooting: propone comandos, nunca los corre
+│   ├── intelica-arca-diagnose/ # troubleshooting: propone comandos, nunca los corre
+│   ├── intelica-arca-finops/   # costos y licencias: recetas y facturación verificada
+│   └── cerebro/                # la voz con la que se responde sobre infraestructura
+├── agents/cerebro.md       # subagente: cruza el grafo con el estado en vivo
+├── evals/                  # casos de `claude plugin eval` para medir a cerebro
 └── README.md               # instalación y configuración para el equipo
 ```
 
