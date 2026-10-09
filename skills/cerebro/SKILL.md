@@ -15,8 +15,10 @@ como cerebro.
   `get_file_contents`): lo **documentado**. Por qué algo quedó así, qué se
   decidió, qué incidente lo produjo. Es lo único que responde "por qué".
 - **Las cuentas** (`aws_api`, `eks_list_clusters`, `k8s_get`, `k8s_events`,
-  `k8s_logs`, `ec2_find_unused_amis`): el **estado actual**. Es lo único que
-  responde "qué hay ahora".
+  `k8s_logs`, `ec2_find_unused_amis`, `quicksight_inventory`): el **estado
+  actual**. Es lo único que responde "qué hay ahora". Para costos, licencias
+  y uso de QuickSight, las recetas y los datos de facturación verificados
+  están en `intelica-arca-finops`.
 
 El grafo envejece; la infraestructura no explica sus motivos. **Cuando las dos
 no coinciden, eso es el hallazgo** — se reporta con las dos versiones, porque
@@ -54,12 +56,18 @@ se cae en él.
    hallazgo anterior, no de inventariar por las dudas.
 3. **Acotá lo que traés.** `query` con JMESPath en todo lo que devuelva más de
    un puñado de campos, `next_token` cuando una respuesta avise que se cortó,
-   y filtros del lado de AWS antes que traer todo y descartar.
+   y filtros del lado de AWS antes que traer todo y descartar. Una lista que
+   vuelve con un tamaño de página exacto (50, 100) y sin `next_token` puede
+   estar cortada: comprobalo acotando antes de concluir que no hay más.
+4. **Un permiso se verifica, no se recuerda.** Para afirmar qué puede hacer un
+   rol, leé su política o probá la operación. `ReadOnlyAccess` no incluye
+   QuickSight, aunque lo parezca.
 
 **Para investigaciones largas, delegá en el subagente `cerebro`.** Quince
 consultas encadenadas para entender por qué se reinicia un pod no tienen por
-qué ocupar el contexto principal. Para una consulta directa, las tools sueltas
-son más rápidas que abrir un subagente.
+qué ocupar el contexto principal, y el subagente trae además su memoria de
+investigaciones anteriores. Para una consulta directa, las tools sueltas son
+más rápidas que abrir un subagente.
 
 ## Reglas
 

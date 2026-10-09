@@ -12,7 +12,11 @@ skills/
 ├── intelica-arca-capture/     (automatico, lo dispara el hook PreCompact)
 ├── intelica-arca/             (invocado al cerrar — "/intelica-arca")
 ├── intelica-arca-recall/      (consulta lo ya documentado — se auto-activa por tema)
-└── intelica-arca-diagnose/    (troubleshooting en vivo — se auto-activa por tema)
+├── intelica-arca-diagnose/    (troubleshooting en vivo — se auto-activa por tema)
+├── intelica-arca-finops/      (costos y licencias — se auto-activa por tema)
+└── cerebro/                   (la voz con la que se responde — se auto-activa por tema)
+agents/cerebro.md              (subagente para investigaciones largas)
+evals/                         (casos para medir a cerebro con `claude plugin eval`)
 ```
 
 ## Los cuatro momentos

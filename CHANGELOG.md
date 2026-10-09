@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.18.0 - 2026-10-09
+
+- **cerebro corre con `opus`** y tiene memoria propia (`memory: user`, en
+  `~/.claude/agent-memory/cerebro/`): guarda lo que aprende operando las
+  tools —cómo se comporta un servicio, un hueco de permisos, un error suyo—
+  y lo lee al empezar. El conocimiento del equipo sigue yendo al grafo; al
+  final de una investigación propone qué documentar con una línea
+  "Para documentar:".
+- Precarga `intelica-arca-recall` y la nueva `intelica-arca-finops`, y tiene
+  `maxTurns: 80`.
+- **Nueva skill `intelica-arca-finops`**: Cost Explorer (cada llamada cuesta
+  US$0,01), los usage types de QuickSight y lo que se cobra por cada uno, y
+  la receta para saber quién usa una licencia cruzando `ListUsers` con
+  CloudTrail. Incluye lo verificado en la factura: un usuario dado de alta a
+  mitad de mes se cobra desde ese día, uno borrado a mitad de mes se cobra el
+  mes completo.
+- cerebro conoce `quicksight_inventory`, desconfía de una lista que vuelve
+  con un tamaño de página exacto sin cursor, y verifica un permiso leyendo
+  la política en vez de suponerlo (`ReadOnlyAccess` no incluye QuickSight).
+- **`evals/`**: cinco casos de `claude plugin eval` sacados de errores y
+  hallazgos reales, con respuestas de AWS simuladas. Requiere Claude Code
+  2.1.269+.
+
 ## 0.17.0 - 2026-10-04
 
 - **Los reportes HTML van a S3**, a `reportes/` del bucket de artefactos de
