@@ -84,7 +84,7 @@ una lista fija lo dejaría sin herramientas en la mitad de los casos. La
 barrera real no es esa lista — el rol detrás tiene un `Deny` de IAM.
 
 Corre con `opus` y tiene `memory: user`: un directorio propio en
-`~/.claude/agent-memory/cerebro/` por persona, para lo que aprende operando
+`~/.claude/agent-memory/intelica-arca-cerebro/` por persona, para lo que aprende operando
 las tools. Lo que le sirve al equipo sigue yendo al grafo. Precarga
 `intelica-arca-recall` (el manual del grafo) e `intelica-arca-finops`; no
 precarga `diagnose`, que repite su propio método y le sumaría unos 1.300

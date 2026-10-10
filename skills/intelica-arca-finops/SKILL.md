@@ -21,6 +21,12 @@ fact older than a few months.
   `SERVICE` (e.g. `Amazon QuickSight`) or by the usage types themselves.
 - A linked account sees its own costs. Numbers are what was billed, after
   discounts: compare them with list prices, never replace them.
+- **How many users are being billed**: for a `-Month` usage type, the daily
+  `UsageQuantity` is users ÷ days in the month (5 readers in October →
+  0.16129). Quantity × days = users billed that day; cost ÷ quantity = price
+  per user-month. One `DAILY` call grouped by `USAGE_TYPE` answers both.
+- The `_costo` field of `aws_api` does not include the US$0.01 of Cost
+  Explorer yet: add it yourself when reporting the cost of the query.
 
 ## QuickSight billing (verified 2026-10-08, portal-dev and portal-prod)
 
@@ -31,8 +37,9 @@ fact older than a few months.
 | `USE1-QuickSuite-Index` | Fixed per account | ~US$1.15 |
 | `EUS2-QS-Enterprise-SPICE` | SPICE capacity in eu-south-2 | by GB |
 
-- **A user added mid-month is charged from that day**, prorated
-  (registrations on 2026-08-10 and 2026-10-01 show as partial days).
+- **A user added mid-month is charged from that moment**, prorated by the
+  hours left in the month (a registration on 2026-10-01 at 14:02 UTC shows
+  as 0.42 of that day).
 - **A user deleted mid-month is charged for the whole month** and stops on
   the 1st of the next one (an author deleted 2026-09-09 kept being charged
   until 2026-10-01). AWS's pricing page and FAQ don't document this; the
@@ -47,8 +54,10 @@ fact older than a few months.
 1. **Users live in the identity region**, `us-east-1`:
    `ListUsers(AwsAccountId, Namespace="default")`. Dashboards and their
    activity live in `eu-south-2`.
-2. **`Active: false` does not mean unused.** Users that come in through the
+2. **`Active: false` says nothing about use** — not as proof, not as a hint,
+   not to decide who to look at first. Users that come in through the
    Portal's embedded dashboards never activate by email and are used daily.
+   Only CloudTrail answers whether someone uses a license.
 3. **Activity is in CloudTrail**, `eu-south-2`, `LookupEvents` with
    `AttributeKey=Username`:
    - SSO users (`AWSReservedSSO_.../email`): the username is the **email**,
@@ -62,7 +71,14 @@ fact older than a few months.
    - SSO users also generate events in other services. If a full page comes
      back with no QuickSight event, the answer is "undetermined", not
      "unused".
-4. **What they can see**: `SearchDashboards` in `eu-south-2` with
+4. **Who was added or removed, and when**: CloudTrail in `us-east-1`,
+   `LookupEvents` by `EventName` (`RegisterUser`, `DeleteUser`), then keep
+   `EventSource == quicksight.amazonaws.com`. `Resources` comes back empty,
+   but the user **is** in the `CloudTrailEvent` JSON:
+   `serviceEventDetails.eventRequestDetails.user.userName` and `.role`
+   (`USER` means author), plus `transferResourceToUser` when assets were
+   handed over.
+5. **What they can see**: `SearchDashboards` in `eu-south-2` with
    `Filters=[{Operator: StringEquals, Name: QUICKSIGHT_VIEWER_OR_OWNER,
    Value: <user ARN>}]`. Use `QUICKSIGHT_OWNER` for ownership, and
    `SearchDataSets` for datasets. `SearchAnalyses` is not allowed to the

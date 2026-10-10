@@ -1,9 +1,26 @@
 # Changelog
 
+## 0.18.1 - 2026-10-09
+
+Ajustes de la prueba a mano de la 0.18.0 contra las cuentas reales:
+
+- **Si no pudo consultar la cuenta, la respuesta empieza por eso**, no por un
+  "sí": con el MCP sin autenticar, cerebro abrió con un "sí" sacado del
+  template.
+- **El código no es la cuenta**: un template dice lo que debería haber, y los
+  tests y fixtures usan datos inventados. Había tomado un fixture de
+  `test_quicksight.py` como estado de las cuentas.
+- **A la memoria va solo lo verificado**: había guardado ese fixture y que un
+  `DeleteUser` no trae el usuario, que es falso.
+- `intelica-arca-finops`: el usuario de un `DeleteUser` está en el JSON del
+  evento aunque `Resources` venga vacío; cómo contar usuarios facturados con
+  `UsageQuantity`; las altas se prorratean por hora; `Active: false` no sirve
+  ni para elegir por dónde empezar.
+
 ## 0.18.0 - 2026-10-09
 
 - **cerebro corre con `opus`** y tiene memoria propia (`memory: user`, en
-  `~/.claude/agent-memory/cerebro/`): guarda lo que aprende operando las
+  `~/.claude/agent-memory/intelica-arca-cerebro/`): guarda lo que aprende operando las
   tools —cómo se comporta un servicio, un hueco de permisos, un error suyo—
   y lo lee al empezar. El conocimiento del equipo sigue yendo al grafo; al
   final de una investigación propone qué documentar con una línea

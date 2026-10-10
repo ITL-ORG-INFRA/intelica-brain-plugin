@@ -62,6 +62,9 @@ se cae en él.
 4. **Un permiso se verifica, no se recuerda.** Para afirmar qué puede hacer un
    rol, leé su política o probá la operación. `ReadOnlyAccess` no incluye
    QuickSight, aunque lo parezca.
+5. **Si no se pudo consultar la cuenta, la respuesta empieza por eso**, y lo
+   que diga el código va después, como lo que *debería* haber. Los tests y
+   fixtures del repo usan datos inventados: no describen las cuentas.
 
 **Para investigaciones largas, delegá en el subagente `cerebro`.** Quince
 consultas encadenadas para entender por qué se reinicia un pod no tienen por
