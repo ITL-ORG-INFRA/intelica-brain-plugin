@@ -3,7 +3,7 @@
 ## 0.18.0 - 2026-10-09
 
 - **cerebro corre con `opus`** y tiene memoria propia (`memory: user`, en
-  `~/.claude/agent-memory/cerebro/`): guarda lo que aprende operando las
+  `~/.claude/agent-memory/intelica-arca-cerebro/`): guarda lo que aprende operando las
   tools —cómo se comporta un servicio, un hueco de permisos, un error suyo—
   y lo lee al empezar. El conocimiento del equipo sigue yendo al grafo; al
   final de una investigación propone qué documentar con una línea
@@ -22,6 +22,13 @@
 - **`evals/`**: cinco casos de `claude plugin eval` sacados de errores y
   hallazgos reales, con respuestas de AWS simuladas. Requiere Claude Code
   2.1.269+.
+- Ajustes de la prueba a mano contra las cuentas reales (2026-10-09): si no
+  pudo consultar la cuenta, la respuesta empieza por eso y no por un "sí";
+  un template dice lo que debería haber y los tests usan datos inventados,
+  así que ninguno de los dos es el estado de una cuenta; a la memoria va solo
+  lo verificado. En `finops`: dónde está el usuario dentro de un evento de
+  CloudTrail, cómo contar usuarios facturados con `UsageQuantity`, y que
+  `Active: false` no sirve ni para elegir por dónde empezar.
 
 ## 0.17.0 - 2026-10-04
 
