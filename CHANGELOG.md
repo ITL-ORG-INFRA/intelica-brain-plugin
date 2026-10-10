@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.18.3 - 2026-10-10
+
+- `intelica-arca-finops`: el costo de Cost Explorer se informa una sola vez.
+  Desde intelica-arca-mcp #29 el `_costo` de una respuesta de `ce` ya trae
+  los US$0,01; la skill decía sumarlos a mano, y con el servidor nuevo eso
+  los contaba dos veces. Ahora: si la respuesta lo trae, se usa; si no, se
+  suma.
+
 ## 0.18.2 - 2026-10-10
 
 - **El `session_id` lo pone Claude Code**: `intelica-arca` y

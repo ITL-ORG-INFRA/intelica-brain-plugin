@@ -25,8 +25,10 @@ fact older than a few months.
   `UsageQuantity` is users ÷ days in the month (5 readers in October →
   0.16129). Quantity × days = users billed that day; cost ÷ quantity = price
   per user-month. One `DAILY` call grouped by `USAGE_TYPE` answers both.
-- The `_costo` field of `aws_api` does not include the US$0.01 of Cost
-  Explorer yet: add it yourself when reporting the cost of the query.
+- Report the Cost Explorer charge once. Since intelica-arca-mcp #29 the
+  `_costo` of a `ce` response carries `costo_aws_usd_aprox: 0.01`: use it as
+  is. If a `ce` response doesn't carry it (server not yet deployed), add
+  US$0.01 per call yourself. Never both.
 
 ## QuickSight billing (verified 2026-10-08, portal-dev and portal-prod)
 
