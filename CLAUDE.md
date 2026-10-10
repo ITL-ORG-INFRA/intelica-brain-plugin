@@ -11,9 +11,10 @@ servidores vive aparte, en `ITL-ORG-INFRA/intelica-arca-mcp`.
 .claude-plugin/plugin.json       metadatos y version
 .claude-plugin/marketplace.json  lo que lee el cliente para ofrecer actualizaciones
 .mcp.json                        los dos servidores MCP que el plugin declara
-skills/                          6 skills: cerebro es la puerta, las 5 de ARCA el resto
+skills/                          7 skills: cerebro es la puerta, smith se multiplica, las 5 de ARCA el resto
 agents/cerebro.md                el agente que cruza el grafo con el estado en vivo
-evals/                           casos de `claude plugin eval` para medir a cerebro
+agents/smith.md                  una copia de smith: investiga un frente de un problema
+evals/                           casos de `claude plugin eval` para medir a cerebro y a smith
 hooks/                           PreCompact, que dispara la captura
 ```
 
@@ -60,6 +61,7 @@ que solo describe qué hace la skill se dispara mal.
 | `intelica-arca-finops` | Sola, por tema: costos, licencias, quién usa qué. Recetas y facturación ya verificada |
 | `intelica-arca-capture` | Por el hook PreCompact. Nunca a mano |
 | `intelica-arca` | Solo con `/intelica-arca`. Cierra la conversación en un PR |
+| `smith` | Sola, por tema: un problema que se parte en frentes independientes (barrer una cuenta buscando ahorro, auditar varias cuentas, un diagnóstico con varias hipótesis). También con `/smith` |
 
 `diagnose` dejó de proponer comandos para que alguien los pegue: ahora consulta
 directo. Si el servidor `intelica-aws` no está conectado, vuelve al modo viejo
@@ -94,6 +96,43 @@ tokens a cada arranque. En un plugin se ignoran `permissionMode`, `hooks`,
 **Antes y después de tocar su prompt, corré los evals** (`evals/README.md`,
 requiere Claude Code 2.1.269+). Cada error verificable de cerebro es un caso
 nuevo.
+
+## Smith: la skill que se multiplica y el agente que es cada copia
+
+Smith es un patrón, no un especialista: **partir, multiplicar, consolidar.**
+Un subagente no puede lanzar otros, así que se multiplica la sesión
+principal:
+
+- **La skill `smith`** parte el problema en frentes que no se pisan (por
+  cuenta, por rubro de costos, por hipótesis, por cluster), junta una sola
+  vez lo que todos necesitan —la factura, la lista de cuentas, la hora del
+  incidente—, lanza una copia por frente en el mismo mensaje y consolida:
+  una fila por recurso, las contradicciones a la vista, la cobertura de cada
+  frente, y la pregunta de por dónde seguir. Para profundizar, retoma con
+  `SendMessage` la copia que encontró el hallazgo.
+- **El agente `smith`** es cada copia. Recibe un mandato (problema, frente,
+  alcance, contexto ya obtenido), se queda en su frente, y devuelve
+  hallazgos con un formato fijo para que se puedan juntar. No escribe su
+  memoria cuando es copia: varias se pisarían. Devuelve "Para memoria:" y
+  guarda la skill.
+
+Hereda de cerebro el modelo, `memory: user`
+(`~/.claude/agent-memory/intelica-arca-smith/`), la ausencia de `tools` y las
+reglas de solo lectura. Precarga `intelica-arca-recall` e
+`intelica-arca-finops`; `diagnose` la carga cuando el frente es un problema
+activo, para no sumarle esos tokens a cada copia.
+
+**Lo de costos no vive en smith.** El método (precio unitario de la
+factura, medido contra estimado, Terraform si hay tags de IaC) y el
+catálogo de chequeos están en `intelica-arca-finops`, sección "Savings
+sweep". Los chequeos deterministas son cuatro tools de `intelica-aws`
+(`finops_red`, `finops_almacenamiento`, `finops_computo`, `finops_logs`),
+una por frente; mientras no estén desplegadas, las copias usan las recetas
+de `aws_api` de esa misma sección.
+
+Lo que sabe de las tools está escrito como límite verificado (sin
+`StartQuery`, `sort_by` sobre fechas, claves no ASCII). Si un límite cambia
+en `intelica-arca-mcp`, se corrige ahí también.
 
 ## Después de cambiar algo
 

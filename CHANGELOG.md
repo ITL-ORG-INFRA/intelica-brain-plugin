@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.19.0 - 2026-10-10
+
+- **Smith, el que se multiplica.** La skill `smith` parte un problema en
+  frentes independientes —por cuenta, por rubro de costos, por hipótesis,
+  por cluster—, junta una sola vez el contexto que todos necesitan, lanza
+  una copia del agente `smith` por frente en paralelo y consolida un solo
+  cuadro con el accionable de cada hallazgo y la pregunta de por dónde
+  seguir. Sirve para barrer una cuenta buscando ahorro, auditar varias
+  cuentas o diagnosticar con varias hipótesis a la vez. Un subagente no
+  puede lanzar otros, por eso se multiplica la sesión principal.
+- **El agente `smith`** es cada copia: recibe un mandato con su frente, no
+  sale de él, devuelve hallazgos en un formato que se puede consolidar y no
+  escribe memoria mientras es copia.
+- **`intelica-arca-finops`: sección "Savings sweep".** El método de ahorro
+  sale del agente y pasa a la skill: el precio unitario de la factura
+  (295,52 USD / 6.692 GB = 0,0442 USD/GB para el NAT de portal-prod), lo
+  medido separado de lo estimado, Terraform cuando hay tags de IaC, quién
+  consume un log antes de sacarlo, y el catálogo por frente con sus recetas
+  de `aws_api`. Nombra las cuatro tools `finops_*` de `intelica-aws`, que
+  hacen los chequeos deterministas en una llamada.
+- Ocho evals nuevos con el tag `smith`: `barrido-con-cuadro` y
+  `diagnostico-en-frentes` prueban la multiplicación (un barrido de ahorro y
+  un diagnóstico de conexión a una RDS); `s3-por-nat`, `medido-vs-estimado`,
+  `flow-logs-con-consumidor`, `terraform-drift`, `precio-de-la-factura` y
+  `no-escribe-smith` prueban una copia sola. Salen del análisis del endpoint
+  de S3 de portal-prod del 2026-10-10; lo inventado está marcado en cada
+  mock.
+
 ## 0.18.4 - 2026-10-10
 
 - `intelica-arca-finops`: **quién se factura, usuario por usuario**, con
