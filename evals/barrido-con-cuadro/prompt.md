@@ -1,11 +1,10 @@
 ---
 name: barrido-con-cuadro
-description: Ante un pedido abierto barre la cuenta entera, devuelve el cuadro de oportunidades con sus accionables y pregunta por cuál empezar
+description: Ante un pedido abierto de ahorro, smith se multiplica en los cuatro frentes, consolida un solo cuadro con accionables y pregunta por cuál empezar
 tags: [smith]
-max_turns: 8
+max_turns: 20
 timeout_seconds: 2700
-allowed_tools: [Agent]
+allowed_tools: [Skill, Agent, SendMessage, mcp__plugin_intelica-arca_intelica-aws__aws_api, mcp__plugin_intelica-arca_intelica-aws__list_accounts]
 ---
 
-Usá el subagente intelica-arca:smith: revisá portal-prod buscando ahorro.
-Mostrame el cuadro que te devuelva.
+Revisá portal-prod buscando ahorro. Mostrame el cuadro.

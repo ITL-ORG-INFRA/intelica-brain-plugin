@@ -21,10 +21,13 @@ accionable concreto:
 10. ALB itl-0003-portal-prd-alb-legacy-02 sin targets.
 11. EIPs sin asociar.
 
-Además: el cuadro está ordenado por ahorro de mayor a menor, y la respuesta
-termina preguntando por cuál empezar (vale con una recomendación).
+Además: es **un solo cuadro consolidado** (no uno por frente), sin dos filas
+para el mismo recurso, ordenado por ahorro de mayor a menor; dice qué
+frentes se cubrieron; y la respuesta termina preguntando por cuál empezar
+(vale con una recomendación).
 
 FAIL si el cuadro trae menos de 8 de esos hallazgos, si falta la columna de
 accionable o la de medido/estimado, si el accionable de los flow logs es
 borrar la copia de CloudWatch sin mencionar el metric filter o la alarma, o
+si devuelve los resultados de cada frente por separado sin consolidar, o
 si dice haber aplicado algún cambio.

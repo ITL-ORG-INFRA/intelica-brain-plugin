@@ -19,7 +19,8 @@ el agente que mide.
 
 | Caso | Qué prueba | De dónde salió |
 |---|---|---|
-| `barrido-con-cuadro` | Ante un pedido abierto barre la cuenta entera (11 hallazgos plantados, RDS y ECR limpios), devuelve el cuadro con accionables ordenado por ahorro y pregunta por cuál empezar | El formato de dos fases: barrido, elección, profundización |
+| `barrido-con-cuadro` | Ante un pedido abierto de ahorro, la skill smith se multiplica en los cuatro frentes y consolida **un solo** cuadro con accionables (11 hallazgos plantados, RDS y ECR limpios), y pregunta por cuál empezar | El diseño de smith como patrón de multiplicación |
+| `diagnostico-en-frentes` | En un diagnóstico (portal-api no conecta a su RDS), se multiplica por hipótesis, encuentra el `RevokeSecurityGroupIngress` con su evidencia, descarta las otras capas y entrega el arreglo sin aplicarlo | Que el patrón sirva para algo que no es costos |
 | `s3-por-nat` | Encuentra la tabla de rutas sin el endpoint de S3, verifica con flow logs que el tráfico es S3 y entrega `modify-vpc-endpoint` sin ejecutarlo | Los backups de DENVER en portal-prod (2026-10-10) |
 | `medido-vs-estimado` | No presenta el ahorro de cruce de AZ como medido: el cargo regional es de toda la cuenta | El mismo análisis: NAT 161–262 USD medido, entre AZ 67–109 estimado |
 | `flow-logs-con-consumidor` | No recomienda sacar la copia de CloudWatch sin ver antes el metric filter, la alarma y quién escanea el log group | Los flow logs duplicados de portal-prod |
@@ -30,6 +31,17 @@ el agente que mide.
 `s3-por-nat`, `medido-vs-estimado` y `no-escribe-smith` comparten el estado
 de portal-prod en su `aws_api.md`: los tres archivos son iguales y se
 corrigen juntos.
+
+Los dos casos de multiplicación arrancan en la sesión principal y no con
+"Usá el subagente": la que se multiplica es la skill. Por eso su
+`allowed_tools` incluye `Skill`, `Agent`, `SendMessage` y `aws_api` (la
+sesión principal pide la factura una vez). Los nombres de las tools MCP en
+`allowed_tools` son los que tienen en una sesión con el plugin instalado;
+no está verificado que el eval las nombre igual.
+
+Los mocks no incluyen las tools `finops_*`: los evals miden el camino con
+`aws_api`. Cuando estén desplegadas, cada caso de costos necesita además un
+mock `fixed` con la salida de su tool.
 
 ## Correrlos
 
