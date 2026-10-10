@@ -38,6 +38,12 @@ fact older than a few months.
 | `USE1-Reader-Enterprise-Month` | Readers | US$2.76 (list US$3) |
 | `USE1-QuickSuite-Index` | Fixed per account | ~US$1.15 |
 | `EUS2-QS-Enterprise-SPICE` | SPICE capacity in eu-south-2 | by GB |
+| `USE1-Author-Pro-Enterprise-Month` | Author Pro / Admin Pro | US$36.80 (list US$40) |
+| `USE1-Amazon-Q-QS-Fee` | Account fee once there is a Pro user with Q enabled | US$230/month (list US$250) |
+
+One Pro user is enough to trigger the US$250 account fee: in June 2026
+portal-dev paid 0.975 Author Pro user-month (US$35.88) **and** the full
+US$230 fee; both disappeared in July.
 
 - **A user added mid-month is charged from that moment**, prorated by the
   hours left in the month (a registration on 2026-10-01 at 14:02 UTC shows
@@ -50,6 +56,27 @@ fact older than a few months.
   current month. Schedule those changes for the last days of the month.
 - A reader costs the same whether or not they log in. There is no suspended
   state; reader capacity pricing starts at US$250/month.
+
+## QuickSight: who is billed, user by user
+
+To answer "who are we paying for" without deducing it from a total:
+
+- `aws_api(account, "ce", "GetCostAndUsageWithResources", region="us-east-1")`
+  with `Filter` on `SERVICE = Amazon QuickSight` (and the usage type if you
+  want only one), `GroupBy` `RESOURCE_ID` (add `USAGE_TYPE` to see every
+  charge), `Granularity: MONTHLY`. Each row is the **ARN of a QuickSight
+  user** with its quantity and cost.
+- It only covers **the last 14 days**. Before that, only totals.
+- Each ARN comes at **list price** (US$24 author, US$3 reader). The discount
+  is a separate `NoResourceId` row with quantity 0 and a negative cost. If
+  `NoResourceId` has quantity 0, the ARNs account for everything billed.
+- Compare the ARNs with `ListUsers`: a user in the list with no row is not
+  being billed; a billed ARN not in the list was deleted this month (and is
+  still charged until the 1st).
+- Verified 2026-10-10 in portal-dev, portal-prod and interchange-dev. It
+  found that `hildebrando.nunez` (ADMIN, `ItlAWSAllAdm`) has no billing row in
+  portal-dev while he is billed in the other two accounts; the cause is open
+  with AWS Support, not a known rule.
 
 ## QuickSight: who uses a license
 
@@ -76,10 +103,13 @@ fact older than a few months.
 4. **Who was added or removed, and when**: CloudTrail in `us-east-1`,
    `LookupEvents` by `EventName` (`RegisterUser`, `DeleteUser`), then keep
    `EventSource == quicksight.amazonaws.com`. `Resources` comes back empty,
-   but the user **is** in the `CloudTrailEvent` JSON:
-   `serviceEventDetails.eventRequestDetails.user.userName` and `.role`
-   (`USER` means author), plus `transferResourceToUser` when assets were
-   handed over.
+   but the user **is** in the `CloudTrailEvent` JSON, in a different place
+   for each event:
+   - `DeleteUser`: `serviceEventDetails.eventRequestDetails.user.userName`
+     and `.role` (`USER` means author), plus `transferResourceToUser` when
+     assets were handed over.
+   - `RegisterUser`: `requestParameters.sessionName` and `.userRole`, and
+     `responseElements.user.userName`. There is no `serviceEventDetails`.
 5. **What they can see**: `SearchDashboards` in `eu-south-2` with
    `Filters=[{Operator: StringEquals, Name: QUICKSIGHT_VIEWER_OR_OWNER,
    Value: <user ARN>}]`. Use `QUICKSIGHT_OWNER` for ownership, and
