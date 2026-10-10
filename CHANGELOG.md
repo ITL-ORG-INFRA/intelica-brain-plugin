@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.18.1 - 2026-10-09
+
+Ajustes de la prueba a mano de la 0.18.0 contra las cuentas reales:
+
+- **Si no pudo consultar la cuenta, la respuesta empieza por eso**, no por un
+  "sí": con el MCP sin autenticar, cerebro abrió con un "sí" sacado del
+  template.
+- **El código no es la cuenta**: un template dice lo que debería haber, y los
+  tests y fixtures usan datos inventados. Había tomado un fixture de
+  `test_quicksight.py` como estado de las cuentas.
+- **A la memoria va solo lo verificado**: había guardado ese fixture y que un
+  `DeleteUser` no trae el usuario, que es falso.
+- `intelica-arca-finops`: el usuario de un `DeleteUser` está en el JSON del
+  evento aunque `Resources` venga vacío; cómo contar usuarios facturados con
+  `UsageQuantity`; las altas se prorratean por hora; `Active: false` no sirve
+  ni para elegir por dónde empezar.
+
 ## 0.18.0 - 2026-10-09
 
 - **cerebro corre con `opus`** y tiene memoria propia (`memory: user`, en
@@ -22,13 +39,6 @@
 - **`evals/`**: cinco casos de `claude plugin eval` sacados de errores y
   hallazgos reales, con respuestas de AWS simuladas. Requiere Claude Code
   2.1.269+.
-- Ajustes de la prueba a mano contra las cuentas reales (2026-10-09): si no
-  pudo consultar la cuenta, la respuesta empieza por eso y no por un "sí";
-  un template dice lo que debería haber y los tests usan datos inventados,
-  así que ninguno de los dos es el estado de una cuenta; a la memoria va solo
-  lo verificado. En `finops`: dónde está el usuario dentro de un evento de
-  CloudTrail, cómo contar usuarios facturados con `UsageQuantity`, y que
-  `Active: false` no sirve ni para elegir por dónde empezar.
 
 ## 0.17.0 - 2026-10-04
 
