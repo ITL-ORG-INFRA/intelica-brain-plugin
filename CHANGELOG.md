@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.18.2 - 2026-10-10
+
+- **El `session_id` lo pone Claude Code**: `intelica-arca` y
+  `intelica-arca-capture` usan `${CLAUDE_SESSION_ID}`, que se sustituye al
+  cargar el skill. Antes el cierre tenía que encontrar el id en la
+  conversación, y después de dos compactaciones el mensaje del hook que lo
+  traía ya estaba resumido: con un id equivocado, `consolidate.py` devuelve
+  `fragment_count: 0` sin error y se pierde todo lo capturado.
+- Estaba escrito desde el 2026-10-04 para la 0.17.0, pero se subió a la rama
+  del PR #1 después de que se mergeara y nunca llegó a `main`.
+
 ## 0.18.1 - 2026-10-09
 
 Ajustes de la prueba a mano de la 0.18.0 contra las cuentas reales:
@@ -55,12 +66,6 @@ Ajustes de la prueba a mano de la 0.18.0 contra las cuentas reales:
   compactación pierde. `consolidate.py` los junta por ruta.
 - `intelica-arca-recall` menciona el reporte y da el link con
   `get_report_url` solo si lo piden; nunca lee el HTML para responder.
-- **El `session_id` lo pone Claude Code**: `intelica-arca` y
-  `intelica-arca-capture` usan `${CLAUDE_SESSION_ID}`, que se sustituye al
-  cargar el skill. Antes el cierre tenía que encontrar el id en la
-  conversación, y después de dos compactaciones el mensaje del hook que lo
-  traía ya estaba resumido: con un id equivocado, `consolidate.py` devuelve
-  `fragment_count: 0` sin error y se pierde todo lo capturado.
 - Requiere las tools `upload_report` y `get_report_url` de
   `intelica-arca-mcp`, y el permiso de `add-reports-bucket-permission.sh`.
 
