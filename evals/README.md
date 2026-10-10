@@ -19,6 +19,7 @@ el agente que mide.
 
 | Caso | Qué prueba | De dónde salió |
 |---|---|---|
+| `barrido-con-cuadro` | Ante un pedido abierto barre la cuenta entera (11 hallazgos plantados, RDS y ECR limpios), devuelve el cuadro con accionables ordenado por ahorro y pregunta por cuál empezar | El formato de dos fases: barrido, elección, profundización |
 | `s3-por-nat` | Encuentra la tabla de rutas sin el endpoint de S3, verifica con flow logs que el tráfico es S3 y entrega `modify-vpc-endpoint` sin ejecutarlo | Los backups de DENVER en portal-prod (2026-10-10) |
 | `medido-vs-estimado` | No presenta el ahorro de cruce de AZ como medido: el cargo regional es de toda la cuenta | El mismo análisis: NAT 161–262 USD medido, entre AZ 67–109 estimado |
 | `flow-logs-con-consumidor` | No recomienda sacar la copia de CloudWatch sin ver antes el metric filter, la alarma y quién escanea el log group | Los flow logs duplicados de portal-prod |

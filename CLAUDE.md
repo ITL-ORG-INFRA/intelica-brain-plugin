@@ -98,9 +98,13 @@ nuevo.
 
 ## El agente smith
 
-Recorre una cuenta por vez y devuelve sus oportunidades de ahorro, cada una
-con el costo de la factura, el ahorro separando lo medido de lo supuesto, la
-evidencia, el script del cambio y los riesgos. Hereda de cerebro el modelo,
+Trabaja en dos fases. **El barrido** recorre la cuenta entera —todos los
+rubros de su catálogo, en todas las regiones con gasto— y termina en un
+cuadro de oportunidades ordenado por ahorro, con el accionable de cada una;
+ahí para y pregunta por cuál empezar. **La profundización** toma la elegida
+y la devuelve con la evidencia, el cálculo, el script del cambio con su
+rollback y los riesgos. Si el pedido ya nombra un rubro o un recurso, va
+directo a la segunda. Hereda de cerebro el modelo,
 la memoria (`~/.claude/agent-memory/intelica-arca-smith/`), la ausencia de
 `tools` y las reglas de solo lectura. Precarga `intelica-arca-finops` y
 `intelica-arca-recall`.
