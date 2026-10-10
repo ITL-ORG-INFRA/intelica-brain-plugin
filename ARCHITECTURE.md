@@ -234,7 +234,8 @@ intelica-brain-plugin/
 │   ├── intelica-arca-finops/   # costos y licencias: recetas y facturación verificada
 │   └── cerebro/                # la voz con la que se responde sobre infraestructura
 ├── agents/cerebro.md       # subagente: cruza el grafo con el estado en vivo
-├── evals/                  # casos de `claude plugin eval` para medir a cerebro
+├── agents/smith.md         # subagente: oportunidades de ahorro de una cuenta
+├── evals/                  # casos de `claude plugin eval` para medir a cerebro y a smith
 └── README.md               # instalación y configuración para el equipo
 ```
 

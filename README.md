@@ -16,7 +16,8 @@ skills/
 ├── intelica-arca-finops/      (costos y licencias — se auto-activa por tema)
 └── cerebro/                   (la voz con la que se responde — se auto-activa por tema)
 agents/cerebro.md              (subagente para investigaciones largas)
-evals/                         (casos para medir a cerebro con `claude plugin eval`)
+agents/smith.md                (subagente: oportunidades de ahorro de una cuenta)
+evals/                         (casos para medir a cerebro y a smith con `claude plugin eval`)
 ```
 
 ## Los cuatro momentos

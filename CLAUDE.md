@@ -13,7 +13,8 @@ servidores vive aparte, en `ITL-ORG-INFRA/intelica-arca-mcp`.
 .mcp.json                        los dos servidores MCP que el plugin declara
 skills/                          6 skills: cerebro es la puerta, las 5 de ARCA el resto
 agents/cerebro.md                el agente que cruza el grafo con el estado en vivo
-evals/                           casos de `claude plugin eval` para medir a cerebro
+agents/smith.md                  el agente que busca ahorro en una cuenta
+evals/                           casos de `claude plugin eval` para medir a cerebro y a smith
 hooks/                           PreCompact, que dispara la captura
 ```
 
@@ -94,6 +95,25 @@ tokens a cada arranque. En un plugin se ignoran `permissionMode`, `hooks`,
 **Antes y después de tocar su prompt, corré los evals** (`evals/README.md`,
 requiere Claude Code 2.1.269+). Cada error verificable de cerebro es un caso
 nuevo.
+
+## El agente smith
+
+Recorre una cuenta por vez y devuelve sus oportunidades de ahorro, cada una
+con el costo de la factura, el ahorro separando lo medido de lo supuesto, la
+evidencia, el script del cambio y los riesgos. Hereda de cerebro el modelo,
+la memoria (`~/.claude/agent-memory/intelica-arca-smith/`), la ausencia de
+`tools` y las reglas de solo lectura. Precarga `intelica-arca-finops` y
+`intelica-arca-recall`.
+
+Dos reglas suyas que no son de cerebro y por las que existe: **el precio
+unitario sale de la factura** (costo ÷ cantidad del usage type), nunca de la
+tabla pública; y **si el recurso tiene tags de Terraform, el cambio va por
+Terraform**, porque uno por CLI lo revierte el próximo `apply` y con él el
+ahorro.
+
+Lo que sabe de las tools está escrito como límite verificado (sin
+`StartQuery`, `sort_by` sobre fechas, claves no ASCII). Si un límite cambia
+en `intelica-arca-mcp`, se corrige ahí también.
 
 ## Después de cambiar algo
 

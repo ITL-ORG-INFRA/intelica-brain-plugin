@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.19.0 - 2026-10-10
+
+- **Agente nuevo, `smith`**: recorre una cuenta por vez buscando ahorro. Arranca
+  por la factura del último mes (una llamada a Cost Explorer agrupada por
+  servicio y usage type) y revisa en el orden que pone la plata. Cada hallazgo
+  sale con el costo actual, el ahorro con lo medido separado de lo estimado,
+  la evidencia con IDs, el cambio con su rollback y su ventana, y los riesgos.
+- El precio unitario se calcula con la factura: 295,52 USD / 6.692 GB =
+  0,0442 USD/GB para el NAT de portal-prod en septiembre. La tabla pública no
+  trae ni la región ni el descuento.
+- Si el recurso tiene tags de módulo o el nombre de IaC, el cambio va por
+  Terraform y el comando de CLI queda como prueba previa.
+- Seis evals nuevos con el tag `smith`: `s3-por-nat`, `medido-vs-estimado`,
+  `flow-logs-con-consumidor`, `terraform-drift`, `precio-de-la-factura` y
+  `no-escribe-smith`. Los tres primeros salen del análisis del endpoint de S3
+  de portal-prod del 2026-10-10.
+
 ## 0.18.4 - 2026-10-10
 
 - `intelica-arca-finops`: **quién se factura, usuario por usuario**, con
