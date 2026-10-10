@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.18.4 - 2026-10-10
+
+- `intelica-arca-finops`: **quién se factura, usuario por usuario**, con
+  `GetCostAndUsageWithResources` agrupado por `RESOURCE_ID`: devuelve el ARN
+  de cada usuario de QuickSight facturado en los últimos 14 días. Es la
+  receta con la que cerebro encontró que a `hildebrando.nunez` no se le cobra
+  en portal-dev.
+- El usuario de un `RegisterUser` está en `requestParameters` y
+  `responseElements`, no en `serviceEventDetails` (eso es solo para
+  `DeleteUser`). La 0.18.1 decía lo mismo para los dos; lo corrigió cerebro
+  al verificarlo en cuatro eventos.
+- Los usage types de Pro: `USE1-Author-Pro-Enterprise-Month` y
+  `USE1-Amazon-Q-QS-Fee`. Un solo usuario Pro dispara el cargo de US$250 de
+  la cuenta (junio de 2026 en portal-dev).
+
 ## 0.18.3 - 2026-10-10
 
 - `intelica-arca-finops`: el costo de Cost Explorer se informa una sola vez.
