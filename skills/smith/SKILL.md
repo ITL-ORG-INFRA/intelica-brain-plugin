@@ -134,13 +134,21 @@ Four fronts, matching the four `finops_*` tools of the `intelica-aws` server:
   public IP that isn't an EIP, EKS pods with `hostPath`, local PVCs or no
   controller): carry its `riesgo` into the table unchanged. A nodegroup
   whose pods couldn't be read comes back as `medio` with the reason in
-  `falta_verificar` — that's unknown, not safe. A row with
-  `evidencia.cpu_plana` proposes only the weekend because the CPU shows no
-  working hours; its first `falta_verificar` (confirm use with incoming
-  traffic or the team) goes in the row as is.
+  `falta_verificar` — that's unknown, not safe.
+- The off-hours window is the company rule for dev, qa and uat, not
+  something to infer: 21:00 to 07:00 Lima time plus the whole weekend
+  (Friday 21:00 to Monday 07:00), 98 h of 168. Lima is UTC-5 all year: the
+  UTC schedule is 02:00 off, 12:00 on. What a row adds is what the rule
+  cuts: `evidencia.actividad_en_ventana_lima` lists the active hours inside
+  the window in Lima time, and they go in the row's "falta verificar" as
+  "corta: mié 22:00, …". 21:00-07:00 Lima is the whole Madrid morning
+  (03:00-13:00 in winter): if those hours show up, ask who uses the
+  environment from Madrid before applying. A row with `evidencia.cpu_plana`
+  shows no conflict but doesn't prove nobody uses it: its first
+  `falta_verificar` goes in as is.
 - `descartados` in the `finops_computo` response lists what
   `fuera_de_horario` looked at and didn't propose, with the reason (already
-  scheduled, constant load, no window, can't be stopped). It goes in
+  scheduled, used at night, constant load, can't be stopped). It goes in
   "reviewed with nothing found" with its reason, never dropped: "nothing
   found" and "discarded because…" are different answers.
 - The merged table for savings uses these columns: #, rubro, recurso (ID),

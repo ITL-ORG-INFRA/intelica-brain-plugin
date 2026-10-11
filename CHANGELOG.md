@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.19.3 - 2026-10-11
+
+- **`fuera_de_horario` aplica la regla de dev/qa**
+  (ITL-ORG-INFRA/intelica-arca-mcp#34): apagado de 21:00 a 07:00 de Lima y
+  el fin de semana entero, 98 h por semana. La CPU ya no elige la ventana,
+  dice qué corta. Smith lleva esas horas, en hora de Lima, a la fila del
+  cuadro, y pregunta por Madrid si aparecen en su mañana. La receta sin
+  tools de `intelica-arca-finops` usa la misma regla.
+
 ## 0.19.2 - 2026-10-11
 
 - **CPU plana y descartados de `fuera_de_horario`**
