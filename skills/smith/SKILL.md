@@ -115,7 +115,7 @@ Four fronts, matching the four `finops_*` tools of the `intelica-aws` server:
 |---|---|---|
 | Red | `finops_red` | S3/DynamoDB through the NAT, cross-AZ to the NAT, idle NAT, unattached EIPs, idle load balancers |
 | Almacenamiento | `finops_almacenamiento` | Orphan snapshots and AMIs, available volumes, gp2 → gp3, oversized io1/io2, S3 without lifecycle, ECR without lifecycle |
-| Cómputo y bases | `finops_computo` | Stopped instances, low CPU, RDS idle / Multi-AZ outside prod / old manual snapshots, EKS extended support, Savings Plans coverage |
+| Cómputo y bases | `finops_computo` | Stopped instances, low CPU, RDS idle / Multi-AZ outside prod / old manual snapshots, off-hours shutdown in dev/qa/uat (`fuera_de_horario`), EKS extended support, Savings Plans coverage |
 | Logs y observabilidad | `finops_logs` | Log groups without retention, duplicated flow logs and their consumers, Logs Insights scans, Container Insights |
 
 - **If the `finops_*` tools are in the tool list**, each copy's mandate
@@ -128,6 +128,12 @@ Four fronts, matching the four `finops_*` tools of the `intelica-aws` server:
   copies follow the `aws_api` recipes in that same section.
 - Services in the bill outside the catalog that cost more than 1 % of the
   month go to the compute front as "otros servicios".
+- In a dev, qa or uat account the compute front also runs
+  `fuera_de_horario` (it says "no aplica" anywhere else). Its `evidencia.apagado_seguro` says what stopping
+  loses (instance store, a public IP that isn't an EIP, EKS pods with
+  `hostPath`, local PVCs or no controller): carry its `riesgo` into the
+  table unchanged. A nodegroup whose pods couldn't be read comes back as
+  `medio` with the reason in `falta_verificar` — that's unknown, not safe.
 - The merged table for savings uses these columns: #, rubro, recurso (ID),
   costo actual/mes, ahorro/mes, medido o estimado, accionable, esfuerzo,
   riesgo, falta verificar. Ordered by savings. The summary line carries the

@@ -178,7 +178,8 @@ with another region if the bill shows spend there.
 
 What the tools can't decide is the copy's job: who consumes a log, whether a
 second NAT is high availability, whether a stopped instance is the
-contingency one. That's what `falta_verificar` lists.
+contingency one, whether someone works on a dev box at night without
+moving the CPU. That's what `falta_verificar` lists.
 
 ### Without the tools: the `aws_api` recipes
 
@@ -194,6 +195,7 @@ contingency one. That's what `falta_verificar` lists.
 | Almacenamiento | S3 / ECR | `GetBucketLifecycleConfiguration`, `GetBucketVersioning`, `BucketSizeBytes` by `StorageType`; ECR `GetLifecyclePolicy` |
 | Cómputo y bases | Instances | `DescribeInstances` + `StateTransitionReason` (stopped > 30 days); `CPUUtilization` max over 14 days |
 | Cómputo y bases | RDS | `DescribeDBInstances`, `DescribeDBSnapshots`; `DatabaseConnections`, `CPUUtilization` |
+| Cómputo y bases | Off-hours (dev/qa/uat only) | `CPUUtilization` average per hour over 21 days, folded into a 7 × 24 week in UTC; an hour is active if it beat the threshold (p20 + 3 points, at least 5 %) in most weeks. Already scheduled resources have no data in those hours: skip them. ASGs: `DescribeAutoScalingGroups`, `DescribeScheduledActions`. What stopping loses: instance store (`DescribeInstanceTypes`), a public IP without EIP; in EKS, pods with `hostPath`, local-class PVCs or no controller (`k8s_get pod`, `pvc`) |
 | Cómputo y bases | EKS | `extendedSupport` usage type in the bill; `DescribeCluster` version |
 | Cómputo y bases | Commitments | `GetSavingsPlansCoverage`, `GetSavingsPlansPurchaseRecommendation` — Cost Explorer calls, billed |
 | Logs | Log groups | `DescribeLogGroups` without `retentionInDays` and large `storedBytes` |

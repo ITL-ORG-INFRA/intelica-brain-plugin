@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.19.1 - 2026-10-11
+
+- **Smith y `intelica-arca-finops` conocen `fuera_de_horario`**, el rubro
+  nuevo de `finops_computo` (ITL-ORG-INFRA/intelica-arca-mcp#31). En
+  cuentas dev/qa/uat busca EC2, grupos de Auto Scaling y RDS sin uso de
+  noche o el fin de semana, con la ventana medida en 21 días de CPU por
+  hora, y dice qué se pierde al apagar. El frente de cómputo lo trae en su
+  tabla; la consolidación copia el riesgo tal cual y no trata como seguro un
+  nodegroup cuyos pods no se pudieron leer. La receta sin tools está en la
+  tabla de `aws_api` de "Savings sweep".
+
 ## 0.19.0 - 2026-10-10
 
 - **Smith, el que se multiplica.** La skill `smith` parte un problema en
