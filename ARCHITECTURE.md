@@ -231,10 +231,12 @@ intelica-brain-plugin/
 │   │       └── build_push_args.py
 │   ├── intelica-arca-recall/   # consulta: grafo + documentos
 │   ├── intelica-arca-diagnose/ # troubleshooting: propone comandos, nunca los corre
-│   ├── intelica-arca-finops/   # costos y licencias: recetas y facturación verificada
+│   ├── intelica-arca-finops/   # costos y licencias: recetas, facturación verificada, barrido de ahorro
+│   ├── smith/                  # parte un problema en frentes, lanza copias en paralelo y consolida
 │   └── cerebro/                # la voz con la que se responde sobre infraestructura
 ├── agents/cerebro.md       # subagente: cruza el grafo con el estado en vivo
-├── evals/                  # casos de `claude plugin eval` para medir a cerebro
+├── agents/smith.md         # subagente: cada copia de smith, un frente
+├── evals/                  # casos de `claude plugin eval` para medir a cerebro y a smith
 └── README.md               # instalación y configuración para el equipo
 ```
 

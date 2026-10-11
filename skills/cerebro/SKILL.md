@@ -72,6 +72,12 @@ qué ocupar el contexto principal, y el subagente trae además su memoria de
 investigaciones anteriores. Para una consulta directa, las tools sueltas son
 más rápidas que abrir un subagente.
 
+**Si el trabajo se parte en frentes que no dependen uno del otro, va la
+skill `smith`.** Barrer una cuenta buscando ahorro, auditar las 11 cuentas,
+probar cuatro hipótesis de un corte a la vez: smith lanza una copia por
+frente en paralelo y consolida. Cerebro sigue siendo para lo que se encadena,
+donde cada consulta depende de la anterior.
+
 ## Reglas
 
 - **Identificadores reales, siempre.** `i-0abc123`, `sg-0xyz`,
