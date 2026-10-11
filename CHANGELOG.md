@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.19.2 - 2026-10-11
+
+- **CPU plana y descartados de `fuera_de_horario`**
+  (ITL-ORG-INFRA/intelica-arca-mcp#33). Un recurso con la CPU igual todo
+  el día —el nodegroup de Portal QA/UAT, 12-13 % las 168 horas— ahora sale
+  como hallazgo de fin de semana, y lo que el rubro descarta llega en
+  `descartados` con el motivo. Smith pone los descartados en "revisado sin
+  hallazgo" con su motivo en vez de omitirlos, y lleva el `falta_verificar`
+  de una fila plana tal cual. La receta sin tools de `intelica-arca-finops`
+  suma el caso plano.
+
 ## 0.19.1 - 2026-10-11
 
 - **Smith y `intelica-arca-finops` conocen `fuera_de_horario`**, el rubro

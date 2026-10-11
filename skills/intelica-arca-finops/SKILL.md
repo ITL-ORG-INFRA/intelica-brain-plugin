@@ -174,7 +174,9 @@ finding comes back with `costo_actual_usd_mes`, `ahorro_usd_mes`
 `precio_unitario`, `via` (`terraform`/`cli`), `accionable`, `cambio`,
 `rollback`, `riesgo` and `falta_verificar`. The response also lists
 `revisado_sin_hallazgo`, `no_revisado` and `regiones_con_gasto`: call again
-with another region if the bill shows spend there.
+with another region if the bill shows spend there. `finops_computo` adds
+`descartados` when `fuera_de_horario` looked at a resource and didn't propose
+it, with the reason.
 
 What the tools can't decide is the copy's job: who consumes a log, whether a
 second NAT is high availability, whether a stopped instance is the
@@ -195,7 +197,7 @@ moving the CPU. That's what `falta_verificar` lists.
 | Almacenamiento | S3 / ECR | `GetBucketLifecycleConfiguration`, `GetBucketVersioning`, `BucketSizeBytes` by `StorageType`; ECR `GetLifecyclePolicy` |
 | Cómputo y bases | Instances | `DescribeInstances` + `StateTransitionReason` (stopped > 30 days); `CPUUtilization` max over 14 days |
 | Cómputo y bases | RDS | `DescribeDBInstances`, `DescribeDBSnapshots`; `DatabaseConnections`, `CPUUtilization` |
-| Cómputo y bases | Off-hours (dev/qa/uat only) | `CPUUtilization` average per hour over 21 days, folded into a 7 × 24 week in UTC; an hour is active if it beat the threshold (p20 + 3 points, at least 5 %) in most weeks. Already scheduled resources have no data in those hours: skip them. ASGs: `DescribeAutoScalingGroups`, `DescribeScheduledActions`. What stopping loses: instance store (`DescribeInstanceTypes`), a public IP without EIP; in EKS, pods with `hostPath`, local-class PVCs or no controller (`k8s_get pod`, `pvc`) |
+| Cómputo y bases | Off-hours (dev/qa/uat only) | `CPUUtilization` average per hour over 21 days, folded into a 7 × 24 week in UTC; an hour is active if it beat the threshold (p20 + 3 points, at least 5 %) in most weeks. Already scheduled resources have no data in those hours: skip them. A flat CPU (no active hour, low median — a QA nodegroup nobody uses sits at 12-13 % all week) shows no working hours but is the clearest candidate: propose only the weekend, Saturday 00:00 to Monday 05:00 UTC, and confirm use with incoming traffic. Flat and high is constant load. ASGs: `DescribeAutoScalingGroups`, `DescribeScheduledActions`. What stopping loses: instance store (`DescribeInstanceTypes`), a public IP without EIP; in EKS, pods with `hostPath`, local-class PVCs or no controller (`k8s_get pod`, `pvc`) |
 | Cómputo y bases | EKS | `extendedSupport` usage type in the bill; `DescribeCluster` version |
 | Cómputo y bases | Commitments | `GetSavingsPlansCoverage`, `GetSavingsPlansPurchaseRecommendation` — Cost Explorer calls, billed |
 | Logs | Log groups | `DescribeLogGroups` without `retentionInDays` and large `storedBytes` |
