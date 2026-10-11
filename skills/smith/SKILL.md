@@ -129,11 +129,20 @@ Four fronts, matching the four `finops_*` tools of the `intelica-aws` server:
 - Services in the bill outside the catalog that cost more than 1 % of the
   month go to the compute front as "otros servicios".
 - In a dev, qa or uat account the compute front also runs
-  `fuera_de_horario` (it says "no aplica" anywhere else). Its `evidencia.apagado_seguro` says what stopping
-  loses (instance store, a public IP that isn't an EIP, EKS pods with
-  `hostPath`, local PVCs or no controller): carry its `riesgo` into the
-  table unchanged. A nodegroup whose pods couldn't be read comes back as
-  `medio` with the reason in `falta_verificar` — that's unknown, not safe.
+  `fuera_de_horario` (it says "no aplica" anywhere else). Its
+  `evidencia.apagado_seguro` says what stopping loses (instance store, a
+  public IP that isn't an EIP, EKS pods with `hostPath`, local PVCs or no
+  controller): carry its `riesgo` into the table unchanged. A nodegroup
+  whose pods couldn't be read comes back as `medio` with the reason in
+  `falta_verificar` — that's unknown, not safe. A row with
+  `evidencia.cpu_plana` proposes only the weekend because the CPU shows no
+  working hours; its first `falta_verificar` (confirm use with incoming
+  traffic or the team) goes in the row as is.
+- `descartados` in the `finops_computo` response lists what
+  `fuera_de_horario` looked at and didn't propose, with the reason (already
+  scheduled, constant load, no window, can't be stopped). It goes in
+  "reviewed with nothing found" with its reason, never dropped: "nothing
+  found" and "discarded because…" are different answers.
 - The merged table for savings uses these columns: #, rubro, recurso (ID),
   costo actual/mes, ahorro/mes, medido o estimado, accionable, esfuerzo,
   riesgo, falta verificar. Ordered by savings. The summary line carries the
