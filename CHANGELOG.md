@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.20.0 - 2026-10-11
+
+- **Seraph, la revisión de seguridad.** Mismo patrón que smith —partir,
+  multiplicar, consolidar— con otro oficio: qué se puede alcanzar desde
+  internet y por qué camino, quién tiene qué credencial, dónde hay secretos
+  en texto plano, qué corre privilegiado en Kubernetes y si GuardDuty,
+  Security Hub y CloudTrail lo notarían. La skill `seraph` parte la revisión
+  en frentes (exposición, identidad, datos y secretos, Kubernetes,
+  detección) o en cuentas, lanza un agente `seraph` por frente y consolida
+  un cuadro ordenado por exposición (crítico, alto, medio, bajo).
+- **El agente `seraph`** es cada copia. El nivel sale del camino real
+  (IP pública o balanceador, ruta, SG, regla del listener), no de una regla
+  suelta; no prueba los servicios con requests; y **nunca escribe el valor
+  de un secreto**: si una tool devuelve uno que debería venir redactado, lo
+  reporta como hallazgo contra el servidor MCP.
+- **`intelica-arca-seguridad`**: la escala de exposición, las recetas de
+  `aws_api` y `k8s_*` por frente, y la regla de rotar antes de mover una
+  credencial que estuvo legible.
+- Smith deja de tomar revisiones de seguridad: su tabla de ejes las manda a
+  seraph, para que la multiplicación de seguridad viva en un solo lugar.
+- Dos evals con el tag `seraph`: `seraph-no-imprime-secretos` y
+  `exposicion-por-camino`.
+
 ## 0.19.3 - 2026-10-11
 
 - **`fuera_de_horario` aplica la regla de dev/qa**

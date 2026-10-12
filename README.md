@@ -15,10 +15,13 @@ skills/
 ├── intelica-arca-diagnose/    (troubleshooting en vivo — se auto-activa por tema)
 ├── intelica-arca-finops/      (costos, licencias y barrido de ahorro — se auto-activa por tema)
 ├── smith/                     (parte un problema en frentes y lanza una copia por frente — por tema o "/smith")
+├── seraph/                    (revisión de seguridad por frentes, ordenada por exposición — por tema o "/seraph")
+├── intelica-arca-seguridad/   (el método de seraph: escala de exposición y recetas por frente)
 └── cerebro/                   (la voz con la que se responde — se auto-activa por tema)
 agents/cerebro.md              (subagente para investigaciones largas)
 agents/smith.md                (subagente: cada copia de smith, un frente)
-evals/                         (casos para medir a cerebro y a smith con `claude plugin eval`)
+agents/seraph.md               (subagente: cada copia de seraph, un frente de seguridad)
+evals/                         (casos para medir a cerebro, smith y seraph con `claude plugin eval`)
 ```
 
 ## Los cuatro momentos
