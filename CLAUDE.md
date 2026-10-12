@@ -11,10 +11,11 @@ servidores vive aparte, en `ITL-ORG-INFRA/intelica-arca-mcp`.
 .claude-plugin/plugin.json       metadatos y version
 .claude-plugin/marketplace.json  lo que lee el cliente para ofrecer actualizaciones
 .mcp.json                        los dos servidores MCP que el plugin declara
-skills/                          7 skills: cerebro es la puerta, smith se multiplica, las 5 de ARCA el resto
+skills/                          9 skills: cerebro es la puerta, smith y seraph se multiplican, las 6 de ARCA el resto
 agents/cerebro.md                el agente que cruza el grafo con el estado en vivo
 agents/smith.md                  una copia de smith: investiga un frente de un problema
-evals/                           casos de `claude plugin eval` para medir a cerebro y a smith
+agents/seraph.md                 una copia de seraph: revisa la seguridad de un frente
+evals/                           casos de `claude plugin eval` para medir a cerebro, smith y seraph
 hooks/                           PreCompact, que dispara la captura
 ```
 
@@ -62,6 +63,8 @@ que solo describe qué hace la skill se dispara mal.
 | `intelica-arca-capture` | Por el hook PreCompact. Nunca a mano |
 | `intelica-arca` | Solo con `/intelica-arca`. Cierra la conversación en un PR |
 | `smith` | Sola, por tema: un problema que se parte en frentes independientes (barrer una cuenta buscando ahorro, auditar varias cuentas, un diagnóstico con varias hipótesis). También con `/smith` |
+| `seraph` | Sola, por tema: una revisión de seguridad (qué está expuesto, quién tiene qué credencial, qué se detectaría), de una cuenta o de varias. También con `/seraph` |
+| `intelica-arca-seguridad` | La precarga el agente seraph: el método, la escala de exposición y las recetas por frente |
 
 `diagnose` dejó de proponer comandos para que alguien los pegue: ahora consulta
 directo. Si el servidor `intelica-aws` no está conectado, vuelve al modo viejo
@@ -133,6 +136,32 @@ de `aws_api` de esa misma sección.
 Lo que sabe de las tools está escrito como límite verificado (sin
 `StartQuery`, `sort_by` sobre fechas, claves no ASCII). Si un límite cambia
 en `intelica-arca-mcp`, se corrige ahí también.
+
+## Seraph: la revisión de seguridad
+
+Seraph es el mismo patrón que smith con otro oficio. Una revisión de
+seguridad se ordena por exposición y no por plata, maneja material sensible,
+y el cambio tiene otra pregunta (quién usa hoy ese camino), así que tiene su
+propio agente en vez de una sección en smith:
+
+- **La skill `seraph`** parte la revisión en frentes (exposición, identidad,
+  datos y secretos, Kubernetes, detección) o en cuentas, lanza un agente
+  seraph por frente y consolida un cuadro ordenado por nivel. Smith no
+  duplica esto: su tabla de ejes manda las revisiones de seguridad a seraph.
+- **El agente `seraph`** es cada copia. Precarga `intelica-arca-recall` e
+  `intelica-arca-seguridad`. Su memoria está en
+  `~/.claude/agent-memory/intelica-arca-seraph/`.
+- **`intelica-arca-seguridad`** tiene la escala (crítico, alto, medio, bajo),
+  las recetas por frente y la regla de los secretos.
+
+**Un agente no puede lanzar a smith ni a otro agente**: la multiplicación
+siempre ocurre en la sesión principal, desde una skill.
+
+**Nunca escribe el valor de un secreto**, ni en un hallazgo, ni en un
+comando, ni en la memoria. Si una tool devuelve uno que debería haber venido
+redactado, es un hallazgo contra `intelica-arca-mcp`. El caso conocido
+(2026-10-11): la anotación `last-applied-configuration` de Kubernetes trae el
+manifiesto entero como texto y `guard.redact` no la mira.
 
 ## Después de cambiar algo
 

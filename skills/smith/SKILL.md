@@ -1,6 +1,6 @@
 ---
 name: smith
-description: "Multiplies: splits a problem about Intelica's infrastructure into independent fronts, launches one copy of the smith agent per front in parallel, and merges what they find into a single answer with a ranked table of actions, then asks where to go next. Use it when the work splits into parts that don't depend on each other: sweeping a whole account for savings ('revisá portal-prod buscando ahorro', 'qué podemos recortar en interchange-dev'), auditing several accounts or clusters at once ('auditá los security groups de las 11 cuentas', 'qué clusters tienen nodos viejos'), or diagnosing a problem with several competing hypotheses ('desde el pod no conecta a la RDS', 'se cayó el portal y no sabemos por qué'). Also with '/smith' or 'smith' named explicitly. Not for a one-off lookup (the intelica-aws tools directly), not for a chain of steps where each depends on the previous one (the cerebro agent), not for a single narrow front (the smith agent directly). Read-only."
+description: "Multiplies: splits a problem about Intelica's infrastructure into independent fronts, launches one copy of the smith agent per front in parallel, and merges what they find into a single answer with a ranked table of actions, then asks where to go next. Use it when the work splits into parts that don't depend on each other: sweeping a whole account for savings ('revisá portal-prod buscando ahorro', 'qué podemos recortar en interchange-dev'), auditing several accounts or clusters at once ('qué clusters tienen nodos viejos', 'qué cuentas tienen recursos sin tags'), or diagnosing a problem with several competing hypotheses ('desde el pod no conecta a la RDS', 'se cayó el portal y no sabemos por qué'). Also with '/smith' or 'smith' named explicitly. Not for a security review (the seraph skill, which uses the same pattern with its own agent), not for a one-off lookup (the intelica-aws tools directly), not for a chain of steps where each depends on the previous one (the cerebro agent), not for a single narrow front (the smith agent directly). Read-only."
 ---
 
 # Smith
@@ -22,6 +22,7 @@ Name the problem in one sentence, then pick **one axis** to split it on:
 | Something broken, cause unknown | hypothesis layer | e.g. network path (SG, NACL, routes), identity (IAM, policies, IRSA), name resolution and endpoints, the workload (pod, events, logs, nodes) |
 | Several clusters | cluster | one per cluster |
 | "What changed" | source | CloudTrail, the graph, current config |
+| A security review, in one account or many | — | **Use the `seraph` skill instead.** Same split-fan-out-merge, but its copies are `intelica-arca:seraph` agents, rank by exposure and never carry a secret's value |
 
 Rules for the split:
 
