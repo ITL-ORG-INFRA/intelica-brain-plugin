@@ -152,10 +152,30 @@ propio agente en vez de una sección en smith:
   `intelica-arca-seguridad`. Su memoria está en
   `~/.claude/agent-memory/intelica-arca-seraph/`.
 - **`intelica-arca-seguridad`** tiene la escala (crítico, alto, medio, bajo),
-  las recetas por frente y la regla de los secretos.
+  las recetas por frente (con las de *barrido* marcadas), el catálogo de
+  controles, las guías de triaje de GuardDuty por tipo y la regla de los
+  secretos.
+
+Seraph tiene tres modos, y la skill elige por el pedido:
+
+- **Revisión**: de una cuenta (seis frentes) o de toda la plataforma (una
+  copia por cuenta, en dos tandas). Siempre deja un `.md` en
+  `salidas/YYYY-MM-DD/seguridad-<alcance>.md` con la cobertura de detección
+  por cuenta y el cuadro ordenado por nivel.
+- **Tarea**: una meta concreta ("asegurá el portal de QA"). Prioriza
+  seguridad y devuelve un plan de controles, cada uno verificado como
+  presente, parcial o ausente.
+- **Triaje de GuardDuty**: lee los findings en audit, la administradora
+  delegada, y da por cada uno brecha probable, sospechosa, benigna esperada
+  o falso positivo, con el punto crítico que lo decide y la contención o la
+  supresión propuesta.
 
 **Un agente no puede lanzar a smith ni a otro agente**: la multiplicación
 siempre ocurre en la sesión principal, desde una skill.
+
+**Este repositorio es público.** Nada de lo que seraph encuentra va acá:
+ni secretos, ni qué cuentas tienen la detección apagada, ni qué está
+expuesto. Eso va en `salidas/` y en la memoria local de seraph.
 
 **Nunca escribe el valor de un secreto**, ni en un hallazgo, ni en un
 comando, ni en la memoria. Si una tool devuelve uno que debería haber venido

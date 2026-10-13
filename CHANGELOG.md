@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.21.0 - 2026-10-12
+
+- **Seraph tiene tres modos.**
+  - **Revisión de plataforma**: una copia por cuenta (las 11, en dos tandas),
+    cada una con los chequeos de *barrido* de los seis frentes, y siempre un
+    `.md` en `salidas/` con la cobertura de detección por cuenta y el cuadro
+    ordenado por nivel. La cobertura de GuardDuty e Inspector se lee una vez,
+    en audit, y viaja en los mandatos.
+  - **Tarea**: una meta concreta prioriza seguridad y devuelve un plan de
+    controles verificados contra la cuenta (presente, parcial o ausente), no
+    una lista genérica.
+  - **Triaje de GuardDuty**: veredicto por finding —brecha probable,
+    sospechosa, benigna esperada o falso positivo— con el punto crítico que
+    lo decide, la contención para una brecha y una supresión acotada para un
+    falso positivo, todo sin aplicar.
+- **`intelica-arca-seguridad`** suma el frente de **vulnerabilidades**
+  (Inspector, escaneo de ECR, versiones fuera de soporte), el catálogo de
+  controles preventivos, de detección y de respuesta, y las guías de triaje
+  por tipo de finding, empezando por los activos en estas cuentas.
+- Qué cuentas tienen la detección apagada no se escribe en el plugin, que
+  es público: va en la memoria de seraph, que es local.
+- Eval nuevo: `guardduty-triaje`.
+
 ## 0.20.0 - 2026-10-11
 
 - **Seraph, la revisión de seguridad.** Mismo patrón que smith —partir,
