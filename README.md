@@ -9,7 +9,7 @@ Request en `ITL-ORG-INFRA/intelica-brain-ia`.
 
 ```
 skills/
-├── intelica-arca-capture/     (automatico, lo dispara el hook PreCompact)
+├── intelica-arca-capture/     (el metodo de extraccion que usa /intelica-arca sobre cada tramo)
 ├── intelica-arca/             (invocado al cerrar — "/intelica-arca")
 ├── intelica-arca-recall/      (consulta lo ya documentado — se auto-activa por tema)
 ├── intelica-arca-diagnose/    (troubleshooting en vivo — se auto-activa por tema)
@@ -26,21 +26,23 @@ evals/                         (casos para medir a cerebro, smith y seraph con `
 
 ## Los cuatro momentos
 
-**Capturar** (`intelica-arca-capture`, automatico): justo antes de que
-Claude Code compacte el contexto, guarda lo relevante de la conversacion en
-staging local (`~/.intelica-arca/sessions/<session_id>/`). Corre solo,
-disparado por el hook — no se invoca a mano.
+**Guardar** (hook `PreCompact`, automatico): justo antes de que Claude
+Code compacte el contexto, copia el tramo que se va a resumir a
+`~/.intelica-arca/sessions/<session_id>/tramo-NNN.md`, como texto legible.
+No frena la compactacion ni le pide nada a Claude.
 
 Por que en ese momento: la compactacion resume la conversacion para poder
 seguir trabajando, no para documentar. Conserva el objetivo y el estado, y
 descarta los identificadores exactos y el razonamiento de las decisiones —
-justo lo que vale guardar. La captura corre mientras todo eso todavia esta
-en contexto.
+justo lo que vale guardar.
 
-**Cerrar** (`intelica-arca`, invocado): consolida los fragmentos de esa
-sesion, resuelve contradicciones, redacta los `.md` finales con su fragmento
-de grafo, y los sube como un solo PR. Todo en un pase. Si la conversacion
-fue corta y nunca se compacto, extrae directo de la conversacion viva.
+**Cerrar** (`intelica-arca`, invocado): lanza un subagente por tramo, que
+lo extrae a un fragmento con el metodo de `intelica-arca-capture`; consolida
+los fragmentos, resuelve contradicciones, redacta los `.md` finales con su
+fragmento de grafo, y los sube como un solo PR. Lo que vino despues de la
+ultima compactacion lo extrae de la conversacion viva. Si una compactacion
+quedo sin tramo (una conversacion de antes de 0.22.0, o un hook que fallo),
+lo recupera del transcript.
 
 **Consultar** (`intelica-arca-recall`): usa el grafo de conocimiento
 (`find_entity`, `traverse`, `find_documents`) para preguntas sobre recursos
@@ -130,10 +132,11 @@ solo al instalarlo — no hay que tocar `settings.json`. Usa
 `${CLAUDE_PLUGIN_ROOT}` para resolver su propia ruta, asi que no se rompe si
 moves el repo de lugar.
 
-Si por algun motivo no queres la captura automatica, deshabilita el plugin o
-quita ese archivo: `/intelica-arca` sigue funcionando igual, solo que al no
-encontrar fragmentos extrae de la conversacion viva. Se pierde el detalle de
-las conversaciones largas ya compactadas, que es justo lo que el hook salva.
+Si por algun motivo no queres el hook, deshabilita el plugin o quita ese
+archivo: `/intelica-arca` sigue funcionando igual, porque recupera los tramos
+del transcript de la sesion (`~/.claude/projects/*/<session_id>.jsonl`)
+cortando en cada compactacion. El hook existe para no depender de que ese
+archivo siga ahi y con el mismo formato.
 
 ## Uso
 
@@ -155,9 +158,12 @@ podria estar ya documentado.
 
 ## Staging local
 
-Los fragmentos de captura viven en `~/.intelica-arca/sessions/<session_id>/`
-como `001.json`, `002.json`, etc. **Nunca se borran** y **nunca van a
-GitHub**: son material de trabajo, no conocimiento. Si un PR sale mal o
-queres re-curar con otro criterio, el crudo sigue ahi.
+En `~/.intelica-arca/sessions/<session_id>/` viven los tramos
+(`tramo-001.md`, ...), su indice `tramos.json` con el rango de lineas del
+transcript de cada uno, y los fragmentos extraidos (`001.json`, ...): el
+fragmento de un tramo lleva su mismo numero. **Nunca se borran** y **nunca
+van a GitHub**: son material de trabajo, no conocimiento — un tramo es la
+conversacion cruda, con la salida de las tools. Si un PR sale mal o queres
+re-curar con otro criterio, el crudo sigue ahi.
 
 Para moverlos a otra ruta: `export INTELICA_ARCA_STAGING=/otra/ruta`.

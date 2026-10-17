@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.22.0 - 2026-10-17
+
+- **La captura no corría nunca.** El hook PreCompact frenaba la compactación
+  con exit 2 para pedirle a Claude que capturara, pero ese mensaje le llega
+  al usuario, no a Claude. La compactación pasaba al segundo intento y
+  `/intelica-arca` decía "no había fragmentos" en conversaciones compactadas
+  varias veces.
+- **El hook ahora copia el tramo y no frena.** `tramos.py` guarda lo que se
+  va a resumir en `~/.intelica-arca/sessions/<id>/tramo-NNN.md`, como texto
+  legible y partido en tramos de hasta ~220k caracteres. La compactación no
+  espera a nadie.
+- **`/intelica-arca` extrae los tramos al cerrar**, con un subagente por
+  tramo en paralelo y el método de `intelica-arca-capture`. El fragmento de
+  cada tramo lleva su número, así el orden de los hechos sigue el de la
+  conversación.
+- **Las compactaciones sin tramo se recuperan del transcript**:
+  `consolidate.py` corta en cada `compact_boundary`. Vale para las
+  conversaciones de antes de esta versión, que siguen en
+  `~/.claude/projects/`.
+
 ## 0.21.0 - 2026-10-12
 
 - **Seraph tiene tres modos.**

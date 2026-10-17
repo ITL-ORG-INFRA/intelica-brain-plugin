@@ -16,7 +16,7 @@ agents/cerebro.md                el agente que cruza el grafo con el estado en v
 agents/smith.md                  una copia de smith: investiga un frente de un problema
 agents/seraph.md                 una copia de seraph: revisa la seguridad de un frente
 evals/                           casos de `claude plugin eval` para medir a cerebro, smith y seraph
-hooks/                           PreCompact, que dispara la captura
+hooks/                           PreCompact, que guarda el tramo que se va a compactar
 ```
 
 ## La versión vive en DOS archivos
@@ -60,7 +60,7 @@ que solo describe qué hace la skill se dispara mal.
 | `intelica-arca-recall` | Sola, por tema: preguntas sobre infraestructura ya documentada |
 | `intelica-arca-diagnose` | Un problema activo. Consulta en vivo con las tools de `intelica-aws` |
 | `intelica-arca-finops` | Sola, por tema: costos, licencias, quién usa qué. Recetas y facturación ya verificada |
-| `intelica-arca-capture` | Por el hook PreCompact. Nunca a mano |
+| `intelica-arca-capture` | La usan los subagentes de `/intelica-arca`, uno por tramo guardado. Nunca a mano |
 | `intelica-arca` | Solo con `/intelica-arca`. Cierra la conversación en un PR |
 | `smith` | Sola, por tema: un problema que se parte en frentes independientes (barrer una cuenta buscando ahorro, auditar varias cuentas, un diagnóstico con varias hipótesis). También con `/smith` |
 | `seraph` | Sola, por tema: una revisión de seguridad (qué está expuesto, quién tiene qué credencial, qué se detectaría), de una cuenta o de varias. También con `/seraph` |

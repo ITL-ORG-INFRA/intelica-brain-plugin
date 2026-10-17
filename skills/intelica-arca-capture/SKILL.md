@@ -1,28 +1,42 @@
 ---
 name: intelica-arca-capture
-description: "Captures what matters from the conversation so far into local staging, right before Claude Code compacts the context. Triggered by the PreCompact hook — NOT invoked by the user, and never activates on conversation topic. Extracts facts, decisions and typed entities (with exact identifiers — AWS resources, database servers and instances, Windows servers and patch reviews) while the full detail is still in context, because compaction summarizes for continuity and drops precisely those identifiers. Covers all three knowledge domains: aws, database, windows. Writes to ~/.intelica-arca/sessions/<session_id>/ via scripts/write_capture.py. Staging only: nothing reaches GitHub here — that is intelica-arca's job at the end of the chat."
+description: "Extracts what matters from a stretch of conversation into a staging fragment: facts, decisions and typed entities with exact identifiers — AWS resources, database servers and instances, Windows servers and patch reviews — because compaction summarizes for continuity and drops precisely those identifiers. Used by the subagents /intelica-arca launches over the tramo-NNN.md stretches the PreCompact hook saved — NOT invoked by the user, and never activates on conversation topic. Covers all three knowledge domains: aws, database, windows. Writes to ~/.intelica-arca/sessions/<session_id>/ via scripts/write_capture.py. Staging only: nothing reaches GitHub here — that is intelica-arca's job at the end of the chat."
 user-invocable: false
 ---
 
 # Intelica ARCA Capture
 
-Saves the conversation's substance to local staging **before** compaction
-degrades it. Runs automatically, triggered by the `PreCompact` hook — the
-user doesn't invoke it.
+Turns a stretch of conversation into a staging fragment. The user doesn't
+invoke it.
 
-Why the timing matters: compaction produces a summary optimized for Claude
-to keep working, not for documentation. It keeps the goal and current state
-but drops exact identifiers, edge cases and the reasoning behind decisions
-— which is exactly the material worth documenting. This runs while all of
-that is still in context.
+Why it exists: compaction produces a summary optimized for Claude to keep
+working, not for documentation. It keeps the goal and current state but
+drops exact identifiers, edge cases and the reasoning behind decisions —
+which is exactly the material worth documenting. So the `PreCompact` hook
+copies the stretch about to be summarized to
+`~/.intelica-arca/sessions/<session_id>/tramo-NNN.md`, without stopping
+the compaction, and `/intelica-arca` extracts each one at the end of the
+chat with this method.
 
-## Session id
+The hook used to stop the compaction (exit 2) and ask Claude to run this
+skill. That message reaches the user, not Claude, so it never ran, and the
+compaction went through on the retry. That's why the hook now saves the
+stretch itself: copying needs no judgment, extracting does, and at the end
+of the chat there is room for it.
 
-The command below already carries this session's id: Claude Code fills it
-in when it loads this skill, and `/intelica-arca` reads the fragments back
-with the same value. Use the command as written. The hook message carries
-the same id; if the two ever differ, use the one in the command and say so
-in one line.
+## Extracting a saved tramo
+
+The mandate gives you the tramo's path, the session id and the tramo
+number. The tramo is a plain transcript: `[usuario]`, `[claude]`,
+`[tool <name>]` with its input and `[resultado]` with its output, both
+truncated. Read it in full before writing — a fact near the end often
+corrects one near the start.
+
+Write with `--tramo <n>`: the fragment takes the tramo's number, so the
+facts keep the conversation's order even though the tramos are extracted
+in parallel. **Always write a fragment for a tramo**, even if it's only a
+`summary` saying it had nothing to document: the fragment is what marks
+the tramo as done, and without it `/intelica-arca` keeps relaunching it.
 
 ## What to extract
 
@@ -46,8 +60,9 @@ conversation.
   disk. After compaction this is the only place the path survives, and
   `/intelica-arca` uploads each report from it at the end of the chat.
 
-Skip greetings, tool output that led nowhere, repeated content, and
-anything already captured in an earlier fragment of this same session.
+Skip greetings, tool output that led nowhere and repeated content. Don't
+worry about overlap with other tramos: the consolidation deduplicates
+entities and relations, and resolves facts by order.
 
 ## Entities: use the real IDs
 
@@ -73,7 +88,7 @@ between the two is usually part of what matters.
 ## Write the fragment
 
 ```bash
-python3 scripts/write_capture.py --session ${CLAUDE_SESSION_ID} <<'EOF'
+python3 scripts/write_capture.py --session <session_id> --tramo <n> <<'EOF'
 {
   "summary": "...",
   "accounts": ["Portal-Prod"],
@@ -100,10 +115,8 @@ sequence number, the timestamp. Don't compute those.
 
 - **Never** writes to GitHub, never opens a PR, never calls the MCP. This
   is staging only.
-- Never asks the user anything — compaction is about to happen and there's
-  no room for a round trip.
-- Only output: one line confirming the fragment was written. Keep it
-  short; the user didn't ask for this, it fired on its own.
-- If the extraction has nothing worth saving (a short exchange with no
-  findings), say so and write nothing. An empty fragment is noise. A
-  generated report is always worth a fragment, even with nothing else.
+- Never asks the user anything — it runs inside a subagent, and nobody is
+  there to answer.
+- Only output: the script's line confirming the fragment was written.
+- A tramo with nothing worth documenting still gets a fragment with just
+  its `summary` (see above). A generated report always goes in `reports`.

@@ -25,17 +25,20 @@ No incluye el servidor MCP — eso vive en `ITL-ORG-INFRA/intelica-arca-mcp`
 DURANTE la conversación                    (automático)
   contexto se llena
        ↓
-  hook PreCompact frena la compactación (exit 2)
+  hook PreCompact → tramos.py copia el tramo que se va a resumir:
+       ~/.intelica-arca/sessions/<session_id>/tramo-001.md
        ↓
-  intelica-arca-capture extrae y escribe:
-       ~/.intelica-arca/sessions/<session_id>/001.json
+  compactación nativa sigue su curso, sin esperar
        ↓
-  compactación nativa sigue su curso
-       ↓
-  se repite → 002.json, 003.json...
+  se repite → tramo-002.md, tramo-003.md...
 
 
 AL CERRAR                                  (/intelica-arca)
+  consolidate.py: tramo para cada compactación que no lo tenga
+       ↓
+  un subagente por tramo pendiente, en paralelo, con el método de
+  intelica-arca-capture → 001.json, 002.json...
+       ↓
   consolidate.py: merge + dedup de los NNN.json
        ↓
   el skill resuelve contradicciones y redacta
@@ -79,28 +82,38 @@ descartó por dos motivos verificados: está optimizado para otra cosa
 inestable entre versiones de Claude Code, así que parsearlo se rompería
 solo.
 
-## Por qué el hook no extrae, solo frena
+## Por qué el hook copia y no frena
 
-Un hook de Claude Code es un comando de shell — no puede razonar sobre la
-conversación. Lo que sí puede es elegir el momento y devolverle el control
-a Claude, que todavía tiene el contexto completo: con exit code 2 frena la
-compactación y le muestra un mensaje. El hook decide *cuándo*; el skill
-hace *qué*.
+Hasta 0.21.0 el hook frenaba la compactación con exit 2 y le pedía a Claude,
+por stderr, que corriera `intelica-arca-capture` mientras todavía tenía el
+contexto completo. **Ese mensaje le llega al usuario, no a Claude**: en
+PreCompact, exit 2 bloquea y muestra el stderr en la terminal. Claude nunca
+se enteraba, la captura no corría, y al reintentar la compactación la marca
+`.capturing` la dejaba pasar. Verificado en los transcripts de octubre de
+2026: todas las carpetas de staging estaban vacías, y `/intelica-arca`
+respondía "no había fragmentos" en conversaciones compactadas tres veces.
+
+Ahora el hook hace lo único que no necesita criterio: copiar el tramo que
+se va a resumir (`skills/intelica-arca/scripts/tramos.py guardar`) y salir
+con 0. La extracción, que sí necesita criterio, pasa al cierre: un subagente
+por tramo, en paralelo, cada uno con el tramo entero en su contexto. Es
+mejor momento que antes de compactar, cuando el contexto está lleno.
+
+Esto parsea el transcript, que es un formato interno de Claude Code. Para
+que un cambio de versión no lo rompa, solo se leen `type` y
+`message.content`, que tienen la forma de la API de mensajes; lo que no se
+reconoce se ignora. Y el hook nunca frena: si falla, la compactación sigue
+y `consolidate.py` recupera el tramo del transcript al cerrar, cortando en
+cada `compact_boundary`.
 
 El hook se registra solo al instalar el plugin, via `hooks/hooks.json` con
 `${CLAUDE_PLUGIN_ROOT}` — no hace falta editar `settings.json`, y la ruta no
 depende de donde este clonado el repo.
 
-Un limite a tener presente: un hook **no puede invocar un skill**. Solo le
-manda el mensaje a Claude por stderr, y Claude decide invocarlo. La captura
-no es deterministica como un cron: depende de que Claude actue sobre ese
-mensaje.
-
-`hooks/precompact-capture.sh` deja un archivo `.capturing` como marca para
-no frenar dos veces la misma compactación — sin eso, hook y skill se
-bloquearían mutuamente en loop. Y si no puede leer el `session_id`, sale
-con 0 en vez de frenar: perder una captura es molesto, dejar la sesión
-trabada es peor.
+Un hook no puede invocar un skill, y en PreCompact su stderr no le llega a
+Claude: nada de la captura puede depender de que Claude actúe durante la
+compactación. Por eso no hay marca `.capturing` ni bloqueo — las que
+quedaron en carpetas viejas de staging no molestan.
 
 ## Por qué Python y no el LLM
 
@@ -109,6 +122,7 @@ necesita criterio**.
 
 | Tarea | Dónde |
 |---|---|
+| Copiar el tramo que se va a compactar, partirlo para que entre en un subagente | `tramos.py` |
 | Numerar fragmentos, resolver el directorio de sesión, timestamps | `write_capture.py` |
 | Deduplicar entidades por ID acumulando propiedades | `consolidate.py` |
 | Deduplicar relaciones, agrupar por cuenta | `consolidate.py` |
@@ -221,12 +235,13 @@ intelica-brain-plugin/
 ├── .mcp.json               # registra intelica-brain-mcp al instalar
 ├── hooks/
 │   ├── hooks.json              # registra el hook al instalar el plugin
-│   └── precompact-capture.sh   # dispara la captura
+│   └── precompact-capture.sh   # guarda el tramo que se va a compactar
 ├── skills/
-│   ├── intelica-arca-capture/  # automático: conversación -> staging local
+│   ├── intelica-arca-capture/  # el método: tramo -> fragmento en staging
 │   │   └── scripts/write_capture.py
 │   ├── intelica-arca/          # invocado: staging -> .md + .graph.yaml -> PR
 │   │   └── scripts/
+│   │       ├── tramos.py
 │   │       ├── consolidate.py
 │   │       └── build_push_args.py
 │   ├── intelica-arca-recall/   # consulta: grafo + documentos
