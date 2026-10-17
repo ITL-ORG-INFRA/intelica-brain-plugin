@@ -13,6 +13,10 @@ fragmentos (uno afirma algo que otro despues descarto) y escribir la
 narrativa. Eso queda para el skill, y por eso los hechos se devuelven con su
 numero de fragmento -- el orden importa para saber que vino despues.
 
+Antes de leer los fragmentos guarda como tramo cada compactacion que quedo
+sin el suyo (ver tramos.py), y devuelve en `tramos_pendientes` los tramos
+que todavia no tienen fragmento: el skill los extrae y vuelve a correr esto.
+
 Uso:
     python3 consolidate.py --session <session_id>
     python3 consolidate.py --session <session_id> --keep   # no borra nada nunca,
@@ -30,6 +34,9 @@ import os
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import tramos  # noqa: E402
 
 STAGING_ROOT = Path(
     os.environ.get("INTELICA_ARCA_STAGING", "~/.intelica-arca/sessions")
@@ -89,12 +96,46 @@ def merge_relations(fragments: list[dict]) -> list[dict]:
     return out
 
 
+def tramos_pendientes(session_id: str, transcript: str | None) -> list[dict]:
+    if transcript and Path(transcript).exists():
+        tramos.poner_al_dia(session_id, Path(transcript))
+    else:
+        found = tramos.buscar_transcript(session_id)
+        if found:
+            tramos.poner_al_dia(session_id, found)
+    directory = session_dir(session_id)
+    pendientes = []
+    for tramo in tramos.leer_manifiesto(directory):
+        if (directory / f"{tramo['numero']:03d}.json").exists():
+            continue
+        pendientes.append({
+            "tramo": tramo["numero"],
+            "path": str(directory / tramo["archivo"]),
+            "caracteres": tramo["caracteres"],
+        })
+    return pendientes
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--session", required=True, help="session_id de la conversacion")
     parser.add_argument("--keep", action="store_true", default=True,
                         help="conservar los fragmentos (default, y no hay opcion de borrar)")
+    parser.add_argument("--transcript",
+                        help="ruta del transcript; por defecto se busca por session_id")
     args = parser.parse_args()
+
+    pendientes = tramos_pendientes(args.session, args.transcript)
+    if pendientes:
+        # Consolidar sin esos tramos daria un documento al que le falta un
+        # pedazo de la conversacion sin ningun aviso.
+        json.dump({
+            "session_id": args.session,
+            "tramos_pendientes": pendientes,
+            "note": "Hay tramos de la conversacion sin extraer. Extraer cada "
+                    "uno a su fragmento y volver a correr consolidate.py.",
+        }, sys.stdout, ensure_ascii=False, indent=2)
+        return 0
 
     directory = session_dir(args.session)
     paths = sorted(directory.glob("[0-9][0-9][0-9].json"))

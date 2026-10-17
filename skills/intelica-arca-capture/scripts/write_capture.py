@@ -10,7 +10,7 @@ Los fragmentos son staging, no conocimiento: viven local, nunca van a GitHub,
 y sobreviven al PR para poder re-curar si hace falta.
 
 Uso:
-    python3 write_capture.py --session <session_id> <<'EOF'
+    python3 write_capture.py --session <session_id> [--tramo <n>] <<'EOF'
     {
       "summary": "...",
       "facts": ["...", "..."],
@@ -19,6 +19,11 @@ Uso:
       "open_questions": ["..."]
     }
     EOF
+
+Con `--tramo n` el fragmento sale de `tramo-NNN.md` y lleva su mismo
+numero, para que el orden de los hechos siga el de la conversacion aunque los
+tramos se extraigan en paralelo. Si ese fragmento ya existe, no se pisa: el
+tramo ya estaba extraido.
 
 Imprime en stdout el path escrito y cuantos fragmentos acumula la sesion.
 """
@@ -48,15 +53,17 @@ def session_dir(session_id: str) -> Path:
 
 
 def next_sequence(directory: Path) -> int:
-    existing = sorted(directory.glob("[0-9][0-9][0-9].json"))
-    if not existing:
-        return 1
-    return int(existing[-1].stem) + 1
+    # Los numeros de los tramos guardados ya estan reservados para sus
+    # fragmentos.
+    used = [int(p.stem) for p in directory.glob("[0-9][0-9][0-9].json")]
+    used += [int(p.stem.removeprefix("tramo-")) for p in directory.glob("tramo-[0-9][0-9][0-9].md")]
+    return max(used, default=0) + 1
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--session", required=True, help="session_id que paso el hook")
+    parser.add_argument("--session", required=True, help="session_id de la conversacion")
+    parser.add_argument("--tramo", type=int, help="numero del tramo-NNN.md del que sale")
     args = parser.parse_args()
 
     try:
@@ -72,13 +79,21 @@ def main() -> int:
     directory = session_dir(args.session)
     directory.mkdir(parents=True, exist_ok=True)
 
-    seq = next_sequence(directory)
+    seq = args.tramo or next_sequence(directory)
     fragment["captured_at"] = datetime.now(timezone.utc).isoformat()
     fragment["sequence"] = seq
     fragment["session_id"] = args.session
+    if args.tramo:
+        fragment["tramo"] = args.tramo
 
     path = directory / f"{seq:03d}.json"
-    path.write_text(json.dumps(fragment, ensure_ascii=False, indent=2), encoding="utf-8")
+    try:
+        with path.open("x", encoding="utf-8") as fh:
+            fh.write(json.dumps(fragment, ensure_ascii=False, indent=2))
+    except FileExistsError:
+        print(f"{path} ya existe: el tramo {seq} ya estaba extraido, no se pisa.",
+              file=sys.stderr)
+        return 1
 
     total = len(list(directory.glob("[0-9][0-9][0-9].json")))
     entities = len(fragment.get("entities") or [])

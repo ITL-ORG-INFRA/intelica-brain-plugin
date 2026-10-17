@@ -1,6 +1,6 @@
 ---
 name: intelica-arca
-description: "Closes out a conversation: consolidates everything intelica-arca-capture staged locally during it, drafts the final .md documents plus their graph fragments, and pushes them as a single Pull Request to ITL-ORG-INFRA/intelica-brain-ia via intelica-brain-mcp — all in one pass. Invoke with '/intelica-arca' (add '--full' to review the drafts before pushing). Works whether the conversation was long (several capture fragments) or short (none — it extracts from the live conversation instead). Covers three knowledge domains — aws, database, windows — and classifies which one each document belongs to before drafting. Does NOT activate on conversation topic, only on explicit invocation. Never merges the PR: that stays a human step in GitHub."
+description: "Closes out a conversation: extracts the stretches that compaction summarized (saved locally by the PreCompact hook, or recovered from the transcript), consolidates them, drafts the final .md documents plus their graph fragments, and pushes them as a single Pull Request to ITL-ORG-INFRA/intelica-brain-ia via intelica-brain-mcp — all in one pass. Invoke with '/intelica-arca' (add '--full' to review the drafts before pushing). Works whether the conversation was long (several compacted stretches) or short (none — it extracts from the live conversation instead). Covers three knowledge domains — aws, database, windows — and classifies which one each document belongs to before drafting. Does NOT activate on conversation topic, only on explicit invocation. Never merges the PR: that stays a human step in GitHub."
 ---
 
 # Intelica ARCA
@@ -28,13 +28,39 @@ deduplicates relations, and returns every fact tagged with the fragment it
 came from. Don't do that merging by hand — a long session can stage 300+
 entities and the script does it exactly, for free.
 
-**`fragment_count: 0`** means the conversation never compacted, so nothing
-was staged. That's normal for a short chat: extract directly from the
-conversation you're in, using the same shape the script would have
-returned, and continue.
+**`tramos_pendientes`** means part of the conversation was compacted and
+hasn't been extracted yet. Each compaction leaves the stretch it summarized
+as a `tramo-NNN.md` in staging — the PreCompact hook saves it, and this
+script recovers any compaction that has none, straight from the transcript.
+Those stretches are no longer in your context, and reading them here would
+fill it, so each one goes to its own subagent:
 
-`reports` lists the HTML reports staged across compactions. Add any
-generated after the last one — they're still in the live conversation.
+- Launch one `general-purpose` Agent per pending tramo, **all in the same
+  message**, in the foreground — you need them done before continuing.
+- Each mandate gives the absolute paths (this skill's base directory is
+  in the header above it): read the tramo in full, in parts with
+  offset/limit (up to ~220k characters); extract following
+  `../intelica-arca-capture/SKILL.md`, section "Extracting a saved
+  tramo"; write with
+  `python3 ../intelica-arca-capture/scripts/write_capture.py --session <session_id> --tramo <tramo>`;
+  answer only with the script's output line.
+- When they're all back, run `consolidate.py` again. Repeat until it
+  returns no `tramos_pendientes`. If a subagent failed, relaunch only that
+  tramo, once; if it fails again, tell the user which one and continue
+  without it.
+
+**`fragment_count: 0`** with no pending tramos means the conversation never
+compacted, so nothing was staged. That's normal for a short chat: extract
+directly from the conversation you're in, using the same shape the script
+would have returned, and continue.
+
+Either way, what came **after** the last compaction is only in your
+context: extract it from the live conversation and add it to what the
+script returned.
+
+`reports` lists the HTML reports found in the extracted tramos. Add any
+generated after the last compaction — they're still in the live
+conversation.
 
 ## Step 2 — Resolve what the script can't
 
@@ -216,10 +242,11 @@ don't block. The reports stay where they are.
 - Never merges the PR, in any mode.
 - The staged fragments are **never deleted** — if the PR comes out wrong or
   you want to re-curate differently, the raw material is still there.
-- The staging fragments (`~/.intelica-arca/sessions/<id>/NNN.json`) never
-  go to GitHub — staging is working material, not knowledge. The
-  `.graph.yaml` files the script generates are a different thing entirely
-  and do get pushed, alongside their `.md`.
+- The staging files (`~/.intelica-arca/sessions/<id>/`: the `tramo-NNN.md`
+  stretches and the `NNN.json` fragments) never go to GitHub — a tramo is
+  raw conversation, tool output included, and staging is working material,
+  not knowledge. The `.graph.yaml` files the script generates are a
+  different thing entirely and do get pushed, alongside their `.md`.
 - Never hand-assemble the files or bypass the script when it reports an
   error. An invalid type reaches `graph.json` silently and nothing
   downstream will catch it.

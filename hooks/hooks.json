@@ -6,7 +6,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/precompact-capture.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/precompact-capture.sh",
+            "timeout": 60
           }
         ]
       }
