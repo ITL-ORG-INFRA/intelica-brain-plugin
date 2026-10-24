@@ -1,6 +1,6 @@
 ---
 name: intelica-arca-capture
-description: "Extracts what matters from a stretch of conversation into a staging fragment: facts, decisions and typed entities with exact identifiers — AWS resources, database servers and instances, Windows servers and patch reviews — because compaction summarizes for continuity and drops precisely those identifiers. Used by the subagents /intelica-arca launches over the tramo-NNN.md stretches the PreCompact hook saved — NOT invoked by the user, and never activates on conversation topic. Covers all three knowledge domains: aws, database, windows. Writes to ~/.intelica-arca/sessions/<session_id>/ via scripts/write_capture.py. Staging only: nothing reaches GitHub here — that is intelica-arca's job at the end of the chat."
+description: "Extracts what matters from a stretch of conversation into a staging fragment: facts, decisions and typed entities with exact identifiers — AWS resources, database servers and instances, Windows servers and patch reviews — because compaction summarizes for continuity and drops precisely those identifiers. Used by the subagents /intelica-arca launches over the tramo-NNN.md stretches the PreCompact hook saved — NOT invoked by the user, and never activates on conversation topic. Covers all three knowledge domains: aws, database, windows. Writes to the session's folder under ~/.intelica-arca/sessions/ via scripts/write_capture.py. Staging only: nothing reaches GitHub here — that is intelica-arca's job at the end of the chat."
 user-invocable: false
 ---
 

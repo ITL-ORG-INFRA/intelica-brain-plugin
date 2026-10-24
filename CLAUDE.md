@@ -185,7 +185,7 @@ manifiesto entero como texto y `guard.redact` no la mira.
 
 ## Después de cambiar algo
 
-1. `./scripts/check-version.sh`
+1. `./scripts/check-version.sh` y `python3 scripts/check-limites.py`
 2. Bump en **los dos** archivos de versión
 3. PR, nunca merge directo
 4. Recién cuando se mergea, el equipo lo recibe al actualizar el plugin

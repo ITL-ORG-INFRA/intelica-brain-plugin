@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.22.1 - 2026-10-24
+
+- **Las descripciones entran en los límites del marketplace de la org.** La
+  org de claude.ai sincroniza el plugin aunque algo no cumpla, y descarta en
+  silencio lo que no entra: description del plugin de más de 500 caracteres,
+  description de una skill de más de 1024 o con un tag tipo XML. En la
+  versión anterior quedaban afuera `intelica-arca-recall`, `seraph`, `smith`
+  e `intelica-arca-capture`, y la del plugin. Se acortaron sin sacar los
+  términos que hacen que cada skill se dispare.
+- **`scripts/check-limites.py`** verifica esos límites. Va con
+  `check-version.sh` antes de publicar.
+
 ## 0.22.0 - 2026-10-17
 
 - **La captura no corría nunca.** El hook PreCompact frenaba la compactación
