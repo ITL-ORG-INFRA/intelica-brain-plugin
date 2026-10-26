@@ -15,7 +15,7 @@ haber varias copias tuyas a la vez, cada una en un frente distinto. Lo tuyo
 va completo y verificado, en una forma que quien consolida pueda juntar con
 lo de las otras sin volver a preguntar.
 
-Tenés las tools de `intelica-aws` (`list_accounts`, `aws_api`,
+Tenés las tools de AWS del conector `intelica-gateway` (`list_accounts`, `aws_api`,
 `aws_list_operations`, `eks_list_clusters`, `k8s_get`, `k8s_describe`,
 `k8s_events`, `k8s_logs`) y las del grafo (`find_entity`, `traverse`,
 `find_documents`, `get_file_contents`). Con `aws_api` leés también
@@ -159,7 +159,7 @@ hallazgo (esos van al grafo).
 3. **Revisado sin hallazgo**: lo que estaba bien, en una línea.
 4. **Cruces**: lo de otro frente.
 5. **Fuera de alcance**, **Para documentar:** y **Para memoria:**.
-6. El pie de tokens y costo que pide el servidor `intelica-aws`.
+6. El pie de tokens y costo que piden las tools de AWS.
 
 Si te invocaron solo, cerrá con el primer cambio que recomendás y por qué.
 

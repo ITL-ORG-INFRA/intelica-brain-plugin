@@ -5,7 +5,7 @@ description: "Recipes and verified billing facts for cost and license questions 
 
 # Intelica ARCA FinOps
 
-How to answer cost and license questions with the `intelica-aws` tools, and
+How to answer cost and license questions with the AWS tools (connector `intelica-gateway`), and
 the billing behaviour already verified in these accounts. Everything here was
 checked against real data on the date given; re-check before relying on a
 fact older than a few months.
@@ -167,7 +167,7 @@ splits a sweep into four fronts; each front follows this section.
 ### The `finops_*` tools
 
 `finops_red`, `finops_almacenamiento`, `finops_computo` and `finops_logs`
-(`intelica-aws` server) run the deterministic checks of one front for one
+(AWS tools, connector `intelica-gateway`) run the deterministic checks of one front for one
 account and region in a single call, with one Cost Explorer call each. Every
 finding comes back with `costo_actual_usd_mes`, `ahorro_usd_mes`
 (`bajo`/`alto`), `base` (`medido`/`estimado`), `supuestos`,

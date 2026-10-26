@@ -82,8 +82,10 @@ que no se puede scriptear.
 
 ## Requisito: el servidor MCP
 
-Este plugin **no reemplaza** el servidor MCP `intelica-brain-mcp`
-(repo separado: `ITL-ORG-INFRA/intelica-arca-mcp`) — lo necesita. `intelica-arca`
+Este plugin **no reemplaza** los servidores MCP (repo separado:
+`ITL-ORG-INFRA/intelica-arca-mcp`) — los necesita, y los alcanza a todos por
+un solo conector, `intelica-gateway`: bases de datos, AWS y ARCA, según los
+alcances de cada persona. `intelica-arca`
 usa `push_knowledge` para persistir en GitHub, y `intelica-arca-recall` usa
 `find_entity` / `traverse` / `find_documents` / `get_file_contents` para
 consultar.

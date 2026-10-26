@@ -1,7 +1,7 @@
 # intelica-brain-plugin
 
 El plugin de Claude Code de Intelica: las skills de ARCA, el agente `cerebro`,
-el hook de captura, y la declaración de los dos servidores MCP.
+el hook de captura, y la declaración del conector MCP (`intelica-gateway`).
 
 **Este repo es también el marketplace del que instala el equipo.** Cada push a
 `main` cambia lo que la gente recibe al actualizar. Por eso el código de los
@@ -10,7 +10,7 @@ servidores vive aparte, en `ITL-ORG-INFRA/intelica-arca-mcp`.
 ```
 .claude-plugin/plugin.json       metadatos y version
 .claude-plugin/marketplace.json  lo que lee el cliente para ofrecer actualizaciones
-.mcp.json                        los tres servidores MCP que el plugin declara (el gateway sirve las bases)
+.mcp.json                        el conector que el plugin declara: intelica-gateway (bases, AWS y ARCA)
 skills/                          9 skills: cerebro es la puerta, smith y seraph se multiplican, las 6 de ARCA el resto
 agents/cerebro.md                el agente que cruza el grafo con el estado en vivo
 agents/smith.md                  una copia de smith: investiga un frente de un problema
@@ -58,7 +58,7 @@ que solo describe qué hace la skill se dispara mal.
 |---|---|
 | `cerebro` | **Sola, por tema**: cualquier pregunta que necesite consultar las cuentas o el grafo. Es la voz con la que se responde |
 | `intelica-arca-recall` | Sola, por tema: preguntas sobre infraestructura ya documentada |
-| `intelica-arca-diagnose` | Un problema activo. Consulta en vivo con las tools de `intelica-aws` |
+| `intelica-arca-diagnose` | Un problema activo. Consulta en vivo con las tools de AWS |
 | `intelica-arca-finops` | Sola, por tema: costos, licencias, quién usa qué. Recetas y facturación ya verificada |
 | `intelica-arca-capture` | La usan los subagentes de `/intelica-arca`, uno por tramo guardado. Nunca a mano |
 | `intelica-arca` | Solo con `/intelica-arca`. Cierra la conversación en un PR |
@@ -67,7 +67,7 @@ que solo describe qué hace la skill se dispara mal.
 | `intelica-arca-seguridad` | La precarga el agente seraph: el método, la escala de exposición y las recetas por frente |
 
 `diagnose` dejó de proponer comandos para que alguien los pegue: ahora consulta
-directo. Si el servidor `intelica-aws` no está conectado, vuelve al modo viejo
+directo. Si el conector `intelica-gateway` no está conectado, vuelve al modo viejo
 y lo dice.
 
 `cerebro` y `recall` se solapan a propósito en la zona documental: las dos
@@ -128,7 +128,7 @@ activo, para no sumarle esos tokens a cada copia.
 **Lo de costos no vive en smith.** El método (precio unitario de la
 factura, medido contra estimado, Terraform si hay tags de IaC) y el
 catálogo de chequeos están en `intelica-arca-finops`, sección "Savings
-sweep". Los chequeos deterministas son cuatro tools de `intelica-aws`
+sweep". Los chequeos deterministas son cuatro tools de AWS
 (`finops_red`, `finops_almacenamiento`, `finops_computo`, `finops_logs`),
 una por frente; mientras no estén desplegadas, las copias usan las recetas
 de `aws_api` de esa misma sección.

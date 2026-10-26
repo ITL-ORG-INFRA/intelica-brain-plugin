@@ -232,7 +232,7 @@ intelica-brain-plugin/
 ├── .claude-plugin/
 │   ├── plugin.json         # manifest del plugin
 │   └── marketplace.json    # se instala apuntando a este mismo repo
-├── .mcp.json               # registra intelica-brain-mcp al instalar
+├── .mcp.json               # registra el conector intelica-gateway al instalar
 ├── hooks/
 │   ├── hooks.json              # registra el hook al instalar el plugin
 │   └── precompact-capture.sh   # guarda el tramo que se va a compactar

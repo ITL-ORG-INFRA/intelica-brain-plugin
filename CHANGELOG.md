@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.24.0 - 2026-10-26
+
+- **Un solo conector.** El plugin declara solo `intelica-gateway`, que sirve
+  las tools de bases de datos, de AWS y de ARCA según los alcances de cada
+  persona (intelica-arca-mcp #55). Los nombres de las tools no cambian:
+  `aws_api`, `find_entity`, `db_denver_dev`... cambia el conector del que
+  salen.
+- **Hay que volver a conectar.** Al actualizar, el conector `intelica-gateway`
+  pide autorizar (el mismo login de FinOps). Los conectores `intelica-aws` e
+  `intelica-brain-mcp` dejan de venir con el plugin; sus URLs siguen
+  andando mientras el equipo migra.
+- **Evals:** los mocks pasan de `mocks/intelica-aws/` y
+  `mocks/intelica-brain-mcp/` a `mocks/intelica-gateway/`, la clave del
+  conector en `.mcp.json`; los `allowed_tools` de `barrido-con-cuadro` y
+  `diagnostico-en-frentes` cambian el prefijo.
+- Agentes y skills hablan de "las tools de AWS" y del conector
+  `intelica-gateway` en vez del servidor `intelica-aws`.
+
 ## 0.23.0 - 2026-10-26
 
 - **El catálogo de bases antes de consultar.** `cerebro` (agente y skill) y

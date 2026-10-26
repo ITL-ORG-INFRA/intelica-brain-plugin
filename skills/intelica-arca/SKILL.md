@@ -303,7 +303,7 @@ each) and the reports to upload, and wait
 for confirmation before uploading or pushing. Without it: do both silently
 and report only the PR link.
 
-If `intelica-brain-mcp` isn't loaded: write the files locally, say so, and
+If the ARCA tools (`push_knowledge`, `upload_report`) aren't loaded — the `intelica-gateway` connector isn't authorized, or the token lacks `arca:write`: write the files locally, say so, and
 don't block. The reports stay where they are.
 
 ## Rules
