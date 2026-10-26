@@ -10,7 +10,7 @@ servidores vive aparte, en `ITL-ORG-INFRA/intelica-arca-mcp`.
 ```
 .claude-plugin/plugin.json       metadatos y version
 .claude-plugin/marketplace.json  lo que lee el cliente para ofrecer actualizaciones
-.mcp.json                        los dos servidores MCP que el plugin declara
+.mcp.json                        los tres servidores MCP que el plugin declara (el gateway sirve las bases)
 skills/                          9 skills: cerebro es la puerta, smith y seraph se multiplican, las 6 de ARCA el resto
 agents/cerebro.md                el agente que cruza el grafo con el estado en vivo
 agents/smith.md                  una copia de smith: investiga un frente de un problema

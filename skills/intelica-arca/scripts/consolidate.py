@@ -23,7 +23,9 @@ Uso:
                                                            # es el default
 
 Imprime en stdout un JSON con: accounts, facts (con secuencia), entities
-deduplicadas, relations deduplicadas, y open_questions.
+deduplicadas, relations deduplicadas, open_questions, y `catalogo`: lo
+descriptivo de cada objeto de base de datos, agrupado por objeto, que el
+skill vuelca en su ficha de database/catalogo/.
 """
 
 from __future__ import annotations
@@ -96,6 +98,28 @@ def merge_relations(fragments: list[dict]) -> list[dict]:
     return out
 
 
+def merge_catalogo(fragments: list[dict]) -> list[dict]:
+    """Un item por objeto (perfil + id, sin distinguir mayusculas), con todos
+    sus hechos y su secuencia: la ficha se arma con lo que se dijo en toda la
+    conversacion, y si un tramo corrige a otro, el de secuencia mayor es el
+    posterior."""
+    por_objeto: dict[tuple, dict] = {}
+    for fragment in fragments:
+        seq = fragment.get("sequence")
+        for item in fragment.get("catalogo") or []:
+            if not isinstance(item, dict) or not item.get("objeto"):
+                continue
+            clave = (str(item.get("perfil", "")).lower(), str(item["objeto"]).lower())
+            actual = por_objeto.setdefault(clave, {
+                "objeto": item["objeto"], "perfil": item.get("perfil"),
+                "tipo": item.get("tipo"), "hechos": [],
+            })
+            actual["tipo"] = item.get("tipo") or actual["tipo"]
+            for hecho in item.get("hechos") or []:
+                actual["hechos"].append({"sequence": seq, "hecho": hecho})
+    return list(por_objeto.values())
+
+
 def tramos_pendientes(session_id: str, transcript: str | None) -> list[dict]:
     if transcript and Path(transcript).exists():
         tramos.poner_al_dia(session_id, Path(transcript))
@@ -149,7 +173,7 @@ def main() -> int:
             "note": "Sin fragmentos de captura — esta conversacion no se compacto. "
                     "Extraer directamente de la conversacion actual.",
             "accounts": [], "facts": [], "entities": [], "relations": [],
-            "open_questions": [], "reports": [],
+            "open_questions": [], "reports": [], "catalogo": [],
         }, sys.stdout, ensure_ascii=False, indent=2)
         return 0
 
@@ -202,6 +226,7 @@ def main() -> int:
         "relations": relations,
         "open_questions": open_questions,
         "reports": list(reports.values()),
+        "catalogo": merge_catalogo(fragments),
         "note": "Los hechos vienen con su numero de fragmento: si dos se "
                 "contradicen, el de secuencia mayor es el posterior en la "
                 "conversacion. Resolverlo es criterio del skill, no del script.",

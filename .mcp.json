@@ -7,6 +7,10 @@
     "intelica-aws": {
       "type": "http",
       "url": "https://q5ux3shjdf3hxtscuk3huzfsrq0llrta.lambda-url.us-east-1.on.aws/mcp"
+    },
+    "intelica-gateway": {
+      "type": "http",
+      "url": "https://cdwkizkq6o3zpintjpm2fkbkku0usvcg.lambda-url.us-east-1.on.aws/mcp"
     }
   }
 }

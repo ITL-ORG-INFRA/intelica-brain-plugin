@@ -62,6 +62,11 @@ script returned.
 generated after the last compaction — they're still in the live
 conversation.
 
+`catalogo` groups, per database object, what was learned that describes it
+(with the fragment each fact came from). Step 3.6 turns it into card
+updates; add what the live conversation learned about an object since the
+last compaction.
+
 ## Step 2 — Resolve what the script can't
 
 This is the part that needs judgment, and it's why the facts come with
@@ -137,8 +142,10 @@ document that doesn't exist.
   Entity types, and their required fields beyond `id`:
   `Account` · `Resource` (needs `resource_type`) · `Finding` (needs
   `finding_type`) · `Decision` (needs `title`) · `Incident` · `Project` ·
-  `DatabaseServer` (needs `engine`) · `Database` · `WindowsServer` ·
-  `PatchReview` (needs `date`).
+  `DatabaseServer` (needs `engine`) · `Database` · `DatabaseObject` (needs
+  `object_type`: `table`, `view`, `procedure`, `function`; id
+  `<BASE>.<schema>.<name>`) · `WindowsServer` · `PatchReview` (needs
+  `date`).
   There is no `Person` type — who did or said something is not modelled,
   by design. `Document` and `DOCUMENTED_IN` are derived, never declared.
 
@@ -148,7 +155,10 @@ document that doesn't exist.
   `RUNS_ON` (a `DatabaseServer` on a `Resource` or `WindowsServer` — this
   is what connects the `database` domain to `aws` or `windows`) ·
   `REVIEWED_IN` · `SAME_AS` (a `WindowsServer` that is also an EC2
-  `Resource` — the two entities stay separate, linked by this relation).
+  `Resource` — the two entities stay separate, linked by this relation) ·
+  `IN_DATABASE` (a `DatabaseObject` in its `Database`) · `REFERENCES` (one
+  object's column points at another's key: how they join) · `WRITES` (a
+  procedure that inserts, updates or deletes in a table).
 
   **On `Incident`, `date` is when the incident STARTED** — not when it was
   detected, not when you're writing this. Those can be weeks apart, and
@@ -173,10 +183,48 @@ example, one about the tooling itself rather than the infrastructure. A
 report with no `.md` naming it is unreachable, so attaching it to an
 unrelated topic just to upload it is worse than leaving it local.
 
+## Step 3.6 — Update the database catalog cards
+
+What the conversation learned that **describes** a database object — what a
+table is for, what a column means, which column to filter by, who writes
+it, what it joins with, a gotcha — goes to that object's card in
+`database/catalogo/` of the knowledge repo, not (only) into a topic. The
+card is what gets read before the next query; a topic is only found by
+someone looking for the story. Source: the consolidated `catalogo` items,
+plus anything descriptive in the live conversation that no fragment has.
+No such knowledge → skip this step.
+
+For each object:
+
+1. Read `database/catalogo/README.md` once (the card format), then the
+   card itself with `get_file_contents`:
+   `database/catalogo/<perfil>/<BASE>/<OBJETO>.md` — the folder is the
+   database without a trailing `*` (`MSTRAFB*` → `MSTRAFB`), the file the
+   object name in upper case. `_base.md` for a database, `_servidor.md`
+   for the profile's servers.
+2. **It exists** → merge. Keep what is still true, correct what this
+   conversation proved wrong (a `DISCARDED:` fact removes the claim, it
+   doesn't sit next to it), add what's new, and keep every existing
+   `fuentes` entry. The script rewrites the whole file, so send the
+   complete merged card — sections, frontmatter values and entities — not
+   just the new part.
+   **It doesn't exist** → create it with what was learned, and say plainly
+   what isn't documented ("quién la escribe no está documentado") instead
+   of guessing.
+3. Never rows. No values from a query result, no amounts, no client data:
+   the card describes the table, not its contents. And nothing the
+   database says on its own (the full column list, types, indexes) —
+   `describir` gives that live. `filas_aprox` and `medido_en` only when
+   this conversation measured them.
+4. `summary` is one line (it's the row in the catalog index); `tags` 3 to
+   8; `temas` names the topic(s) of this same close the card's knowledge
+   came from, so `fuentes` cites this conversation.
+
 ## Step 4 — Generate and push
 
-One script validates the drafts, writes both files per topic, and computes
-the deterministic parts (real date, slugs, branch name, paths):
+One script validates the drafts, writes both files per topic, writes the
+catalog cards, and computes the deterministic parts (real date, slugs,
+branch name, paths). Without cards, the input is the list of topics:
 
 ```bash
 python3 scripts/build_push_args.py <<'EOF'
@@ -190,6 +238,26 @@ python3 scripts/build_push_args.py <<'EOF'
 }]
 EOF
 ```
+
+With cards, an object with both lists (`temas` can be empty):
+
+```bash
+python3 scripts/build_push_args.py <<'EOF'
+{"temas": [ ...topics as above... ],
+ "fichas": [{
+   "perfil": "denver", "base": "ASSOCINV", "objeto": "dbo.FEE_FRAC_N", "tipo": "tabla",
+   "title": "...", "summary": "...", "body": "## Para qué sirve\n...",
+   "entornos": ["denver-dev"], "acotar_por": "RPT_BNK_ID", "tags": ["..."],
+   "fuentes": ["<the existing card's fuentes>"], "temas": ["<topic title>"],
+   "entities": [{"type": "DatabaseObject", "id": "ASSOCINV.dbo.FEE_FRAC_N", "object_type": "table"}],
+   "relations": [{"from": "ASSOCINV.dbo.FEE_FRAC_N", "type": "IN_DATABASE", "to": "ASSOCINV"}]
+ }]}
+EOF
+```
+
+An object card has to declare its own `DatabaseObject` (id
+`<base>.<objeto>`, `object_type` matching `tipo`). The cards go in the same
+`files`, so the same `push_knowledge` opens one PR with topics and cards.
 
 `domain` is required (`aws`, `database`, or `windows` — from Step 2.5) and
 decides the folder: `inbox/aws/<account>/...` keeps the existing
@@ -230,7 +298,8 @@ Don't pass a sender. The server derives it from the authenticated personal
 token — it isn't a parameter. Never ask the user for an email or any other
 personal data.
 
-With `--full`: show the drafted files and the reports to upload, and wait
+With `--full`: show the drafted files (cards included, with what changed in
+each) and the reports to upload, and wait
 for confirmation before uploading or pushing. Without it: do both silently
 and report only the PR link.
 

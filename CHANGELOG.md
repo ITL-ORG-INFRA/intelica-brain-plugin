@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.23.0 - 2026-10-26
+
+- **El catálogo de bases antes de consultar.** `cerebro` (agente y skill) y
+  `intelica-arca-recall` leen `database/catalogo/INDEX.md` y la ficha del
+  objeto en `intelica-brain-ia` antes de consultar una base: qué significa
+  cada columna, por dónde se acota, quién la escribe, con qué se cruza.
+  `describir` queda para lo que la ficha no dice. Si la base en vivo no
+  coincide con la ficha, es un hallazgo.
+- **Las filas no se guardan.** Un monto o un valor de una consulta se usa
+  para responder y no va a la memoria ni a "Para documentar"; lo que se
+  aprendió de la tabla va a su ficha.
+- **La captura junta lo descriptivo por objeto** (campo `catalogo` del
+  fragmento) y **el cierre lo escribe en la ficha**: `/intelica-arca` lee la
+  ficha existente, la actualiza en su lugar y la sube en el mismo PR que los
+  temas. `build_push_args.py` arma las fichas y valida `DatabaseObject`,
+  `IN_DATABASE`, `REFERENCES` y `WRITES`; `consolidate.py` agrupa por
+  objeto. Necesita intelica-arca-mcp #54 (ARCA escribe en
+  `database/catalogo/`).
+- **El conector `intelica-gateway`** (las bases: `db_denver_dev`) queda
+  declarado en `.mcp.json`. Quien no tiene ningún alcance `db:*` conecta y no
+  ve tools (intelica-arca-mcp #54).
+- **Evals:** `catalogo-antes-de-consultar` (suma lo asignado y no el total de
+  la factura, que solo la ficha distingue) y `ficha-sin-inventar` (una tabla
+  sin documentar no recibe un propósito ni un dueño inventados).
+  `test_fichas.py` cubre las fichas y la consolidación.
+
 ## 0.22.1 - 2026-10-24
 
 - **Las descripciones entran en los límites del marketplace de la org.** La
