@@ -4,7 +4,7 @@ description: Smith se multiplica por hipótesis en un diagnóstico, consolida, e
 tags: [smith]
 max_turns: 20
 timeout_seconds: 2700
-allowed_tools: [Skill, Agent, SendMessage, mcp__plugin_intelica-arca_intelica-aws__aws_api, mcp__plugin_intelica-arca_intelica-aws__list_accounts]
+allowed_tools: [Skill, Agent, SendMessage, mcp__plugin_intelica-arca_intelica-gateway__aws_api, mcp__plugin_intelica-arca_intelica-gateway__list_accounts]
 ---
 
 Smith: desde ayer a la tarde portal-api, en el cluster

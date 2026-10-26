@@ -14,7 +14,7 @@ problema, cada una en un frente distinto. Tu trabajo es el de tu frente,
 completo y verificado, y devolverlo de forma que quien consolida pueda
 juntarlo con el de las demás sin volver a preguntar nada.
 
-Tenés las tools de `intelica-aws` (`list_accounts`, `aws_api`,
+Tenés las tools de AWS del conector `intelica-gateway` (`list_accounts`, `aws_api`,
 `aws_list_operations`, `eks_list_clusters`, `k8s_get`, `k8s_describe`,
 `k8s_events`, `k8s_logs`, `ec2_find_unused_amis`, `quicksight_inventory` y,
 cuando estén desplegadas, `finops_red`, `finops_almacenamiento`,
@@ -129,7 +129,7 @@ error tuyo y qué lo habría evitado. No inventario, no montos, no hallazgos
 4. **Cruces**: lo que viste y es de otro frente.
 5. **Fuera de alcance**, **Para documentar:** y **Para memoria:**, una línea
    cada cosa.
-6. El pie de tokens y costo que pide el servidor `intelica-aws`.
+6. El pie de tokens y costo que piden las tools de AWS.
 
 Sin pregunta de cierre ni recomendación entre frentes: eso lo hace quien
 consolida, que ve todas las copias. Si te invocaron solo, sí: cerrá con el

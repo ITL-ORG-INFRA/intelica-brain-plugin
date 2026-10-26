@@ -78,7 +78,7 @@ Los servidores MCP **no se conectan** durante un eval: cada tool responde desde
 un archivo en `mocks/`. `list_accounts` y las tools del grafo tienen una
 respuesta fija común a todos los casos (`evals/mocks/`). `aws_api` es
 `type: agent`: un modelo responde siguiendo la descripción del estado de la
-cuenta que tiene cada caso en `<caso>/mocks/intelica-aws/aws_api.md`, porque una
+cuenta que tiene cada caso en `<caso>/mocks/intelica-gateway/aws_api.md`, porque una
 sola tool cubre cientos de operaciones distintas.
 
 Las bases van igual: `db_denver_dev` (servidor `intelica-gateway`) tiene un
@@ -90,7 +90,7 @@ Lo que no se pudo verificar sin correrlo, y conviene revisar en la primera
 corrida:
 
 - El nombre de la carpeta de cada servidor en `mocks/` es la clave del
-  `.mcp.json` (`intelica-aws`, `intelica-brain-mcp`); la documentación no lo
+  `.mcp.json` (`intelica-gateway`, el único conector); la documentación no lo
   dice explícito.
 - Los graders miran la respuesta final de la sesión principal, que es la que
   resume lo que hizo el agente. No está documentado si `tool_used` ve las
@@ -101,6 +101,6 @@ corrida:
 ## Agregar un caso
 
 Cada vez que un agente se equivoque en algo que se pueda verificar, ese
-error es un caso nuevo: `prompt.md` con la pregunta, `mocks/intelica-aws/aws_api.md`
+error es un caso nuevo: `prompt.md` con la pregunta, `mocks/intelica-gateway/aws_api.md`
 con el estado de la cuenta que la responde, y al menos un grader en
 `graders/`.

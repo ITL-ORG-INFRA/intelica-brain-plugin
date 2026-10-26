@@ -1,6 +1,6 @@
 ---
 name: smith
-description: "Multiplies: splits a problem about Intelica's infrastructure into independent fronts, launches one copy of the smith agent per front in parallel, and merges what they find into a single answer with a ranked table of actions, then asks where to go next. Use it when the work splits into parts that don't depend on each other: sweeping a whole account for savings ('revisá portal-prod buscando ahorro', 'qué podemos recortar en interchange-dev'), auditing several accounts or clusters at once ('qué clusters tienen nodos viejos', 'qué cuentas tienen recursos sin tags'), or diagnosing a problem with several competing hypotheses ('desde el pod no conecta a la RDS', 'se cayó el portal y no sabemos por qué'). Also with '/smith'. Not for a security review (the seraph skill), not for a one-off lookup (the intelica-aws tools directly), not for a chain of steps where each depends on the previous one (the cerebro agent), not for a single narrow front (the smith agent directly). Read-only."
+description: "Multiplies: splits a problem about Intelica's infrastructure into independent fronts, launches one copy of the smith agent per front in parallel, and merges what they find into a single answer with a ranked table of actions, then asks where to go next. Use it when the work splits into parts that don't depend on each other: sweeping a whole account for savings ('revisá portal-prod buscando ahorro', 'qué podemos recortar en interchange-dev'), auditing several accounts or clusters at once ('qué clusters tienen nodos viejos', 'qué cuentas tienen recursos sin tags'), or diagnosing a problem with several competing hypotheses ('desde el pod no conecta a la RDS', 'se cayó el portal y no sabemos por qué'). Also with '/smith'. Not for a security review (the seraph skill), not for a one-off lookup (the AWS tools directly), not for a chain of steps where each depends on the previous one (the cerebro agent), not for a single narrow front (the smith agent directly). Read-only."
 ---
 
 # Smith
@@ -110,7 +110,7 @@ following the format of what's already there.
 
 ## 5. Playbook: savings sweep of one account
 
-Four fronts, matching the four `finops_*` tools of the `intelica-aws` server:
+Four fronts, matching the four `finops_*` tools of the AWS tools (connector `intelica-gateway`):
 
 | Front | Tool | Covers |
 |---|---|---|

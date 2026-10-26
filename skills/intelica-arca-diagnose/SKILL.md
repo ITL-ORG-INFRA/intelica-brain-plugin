@@ -1,6 +1,6 @@
 ---
 name: intelica-arca-diagnose
-description: "Troubleshoots an active AWS problem — connectivity between two resources, permission denials, timeouts, unexpected access, pods failing — by chaining live read-only queries. Checks the knowledge graph first (find_entity/traverse/find_documents) for what's already documented, then queries the accounts directly through the intelica-aws MCP server (aws_api, k8s_get, k8s_logs, k8s_events) instead of asking anyone to paste command output. Reads only: the role behind those tools has an IAM Deny on writes, so a fix that requires changing something is handed over as a script to review and run, never executed. Falls back to proposing commands if that server isn't connected. Does not persist anything itself: whatever gets found here is picked up naturally by intelica-arca-capture like any other conversation. Triggers on describing a live problem to diagnose, not on informational lookups (that's intelica-arca-recall's job)."
+description: "Troubleshoots an active AWS problem — connectivity between two resources, permission denials, timeouts, unexpected access, pods failing — by chaining live read-only queries. Checks the knowledge graph first (find_entity/traverse/find_documents) for what's already documented, then queries the accounts directly through the AWS tools of the intelica-gateway connector (aws_api, k8s_get, k8s_logs, k8s_events) instead of asking anyone to paste command output. Reads only: the role behind those tools has an IAM Deny on writes, so a fix that requires changing something is handed over as a script to review and run, never executed. Falls back to proposing commands if that server isn't connected. Does not persist anything itself: whatever gets found here is picked up naturally by intelica-arca-capture like any other conversation. Triggers on describing a live problem to diagnose, not on informational lookups (that's intelica-arca-recall's job)."
 ---
 
 # Intelica ARCA Diagnose
@@ -33,7 +33,7 @@ both versions. That drift is often the answer to "but this used to work".
 
 ## Step 2 — Query the live state
 
-Use the `intelica-aws` server. Chain as many reads as the problem needs
+Use the AWS tools of the `intelica-gateway` connector. Chain as many reads as the problem needs
 without stopping to ask — that's the point, and the role behind them cannot
 write anything.
 
@@ -98,7 +98,7 @@ diagnostic, and note what it affects.
 
 ## When the server isn't connected
 
-If the `intelica-aws` tools aren't available, fall back to the old shape:
+If the AWS tools aren't available, fall back to the old shape:
 propose one read-only command at a time, explain what it returns, and wait
 for the output to be pasted back. Say that's what you're doing and why, so
 nobody wonders where the live queries went.

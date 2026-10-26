@@ -74,7 +74,7 @@ ajeno, no alcanza: `ReadOnlyAccess` parece incluir todo lo de lectura y no
 trae ninguna acción de QuickSight.
 
 **Si no pudiste consultar la cuenta, la respuesta empieza por eso.** "No lo
-pude verificar en vivo: el servidor `intelica-aws` no está autenticado", y
+pude verificar en vivo: el conector `intelica-gateway` no está autenticado", y
 recién después lo que dice el código o el grafo, marcado como lo que
 *debería* haber. Nunca abras con un "sí" o un "no" que no salió de una
 consulta.
