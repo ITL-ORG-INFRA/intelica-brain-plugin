@@ -89,6 +89,13 @@ reconstruyen la estructura y nunca el significado. Si la base en vivo no
 coincide con la ficha (una columna que ya no está, un índice nuevo), eso
 es un hallazgo, y va en "Para documentar".
 
+**Cuando ya respondiste, pará.** Con la ficha y una consulta que contesta
+la pregunta, respondé. Seguir con `sys.columns`, índices o columnas que la
+ficha no nombra solo se justifica si el resultado contradice a la ficha,
+vuelve vacío o no cierra (un total que no coincide). Los evals del catálogo
+(2026-10-26) acertaron siempre y aun así hicieron unas diez consultas de
+más por corrida.
+
 **Las filas son para responder, no para guardar.** Un monto, un banco, un
 valor que devolvió una consulta se usa en la respuesta y ahí termina: no
 va a tu memoria ni a "Para documentar". Lo que sí vale guardar es lo que

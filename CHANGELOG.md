@@ -18,6 +18,14 @@
   `IN_DATABASE`, `REFERENCES` y `WRITES`; `consolidate.py` agrupa por
   objeto. Necesita intelica-arca-mcp #54 (ARCA escribe en
   `database/catalogo/`).
+- **Cerebro para cuando ya respondió.** Con la ficha y una consulta que
+  contesta, responde; seguir explorando solo si el resultado contradice la
+  ficha o no cierra. En los evals acertó siempre, pero hizo unas diez
+  consultas de más por corrida.
+- **Quién escribe una tabla se encuentra en vivo**: recall suma la receta de
+  `sys.sql_modules` (los procs que la mencionan, y el fragmento que dice si
+  la escriben o la leen). En Denver Dev encontró los 7 procs que tocan
+  `MAR_FEE_DATA`, que la ficha daba por imposibles de ubicar.
 - **El conector `intelica-gateway`** (las bases: `db_denver_dev`) queda
   declarado en `.mcp.json`. Quien no tiene ningún alcance `db:*` conecta y no
   ve tools (intelica-arca-mcp #54).

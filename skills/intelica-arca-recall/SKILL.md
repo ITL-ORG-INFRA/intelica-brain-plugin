@@ -68,6 +68,24 @@ who writes it, what it joins with, what already cost time.
    the card is what makes the first query right: the column that means
    what's being asked, the filter the guard requires, the index it uses.
 
+**Who writes or reads an object** — when the card doesn't say, it can be
+found live: the code of every proc, view and function is in
+`sys.sql_modules`, readable with the read-only login. `consultar` on the
+object's database:
+
+```sql
+SELECT o.name, o.type_desc, o.modify_date
+FROM sys.sql_modules m JOIN sys.objects o ON o.object_id = m.object_id
+WHERE m.definition LIKE '%MAR[_]FEE[_]DATA%'
+```
+
+(`[_]` because `_` is a wildcard in `LIKE`.) That lists every module that
+mentions it; to tell writers from readers, pull the text around the match
+with `SUBSTRING(m.definition, CHARINDEX('<NAME>', m.definition) - 160, 320)`
+and look for `INSERT`, `UPDATE`, `DELETE` or `MERGE`. It's per database: a
+proc in another database that writes with a three-part name only shows up
+when searching that database. What it finds is worth a card update.
+
 The card is not live: `filas_aprox` has its `medido_en` date, and the
 structure can change. When the live database disagrees with the card,
 that's a finding — say so with both versions. No card for the object →
