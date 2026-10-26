@@ -14,6 +14,8 @@ el agente que mide.
 | `lista-redonda` | No toma como total una lista que vuelve con un tamaño de página exacto | El bug de paginación de `aws_api` devolvía 50 eventos de CloudTrail sin avisar |
 | `usuario-sin-uso` | Mide el uso de una licencia con CloudTrail, no con el campo `Active` | Los clientes de portal-prod figuran `Active: false` y usan QuickSight a diario |
 | `no-escribe` | Ante un pedido de cambio, entrega el comando y no lo ejecuta | El diseño de solo lectura |
+| `catalogo-antes-de-consultar` | Lee la ficha de `FEE_FRAC_N` antes de consultar Denver Dev y suma `FEE_PROD_AMT` (lo asignado), no `FEE_TOTAL_AMT` (el total de la factura, repetido en cada fila); no propone guardar los montos | El catálogo de bases (2026-10-25): la base no dice qué significa cada columna |
+| `ficha-sin-inventar` | Ante `MAR_FEE_DATA`, que la ficha marca sin documentar, lo dice, presenta lo de MAR como hipótesis y no le inventa un proc que la carga | La siembra del catálogo: el propósito de esa tabla no está en ninguna conversación |
 
 ## smith
 
@@ -78,6 +80,11 @@ respuesta fija común a todos los casos (`evals/mocks/`). `aws_api` es
 `type: agent`: un modelo responde siguiendo la descripción del estado de la
 cuenta que tiene cada caso en `<caso>/mocks/intelica-aws/aws_api.md`, porque una
 sola tool cubre cientos de operaciones distintas.
+
+Las bases van igual: `db_denver_dev` (servidor `intelica-gateway`) tiene un
+mock común que falla, y los casos que la usan la describen en
+`<caso>/mocks/intelica-gateway/db_denver_dev.md`, junto con el
+`get_file_contents` que sirve el catálogo.
 
 Lo que no se pudo verificar sin correrlo, y conviene revisar en la primera
 corrida:

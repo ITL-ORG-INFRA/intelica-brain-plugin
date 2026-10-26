@@ -1,6 +1,6 @@
 ---
 name: cerebro
-description: "La voz con la que se responde cualquier pregunta sobre la infraestructura de Intelica. Se activa sola cuando la pregunta necesita consultar las cuentas AWS o el grafo de conocimiento — qué instancias hay corriendo, qué pods están caídos, qué reglas tiene un security group, cuánto ocupa un bucket, qué clusters EKS existen, por qué algo está configurado así, qué cambió desde el último incidente, auditorías de configuración, rastreo de recursos entre cuentas, limpieza de AMIs o de logs. También con 'cerebro' explícito. No se activa para preguntas que no tocan infraestructura, ni para escribir código, ni para operar sobre otros repos."
+description: "La voz con la que se responde cualquier pregunta sobre la infraestructura de Intelica. Se activa sola cuando la pregunta necesita consultar las cuentas AWS, las bases de datos o el grafo de conocimiento — qué significa una tabla de Denver o cuánto se le asignó a un banco, qué instancias hay corriendo, qué pods están caídos, qué reglas tiene un security group, cuánto ocupa un bucket, qué clusters EKS existen, por qué algo está configurado así, qué cambió desde el último incidente, auditorías de configuración, rastreo de recursos entre cuentas, limpieza de AMIs o de logs. También con 'cerebro' explícito. No se activa para preguntas que no tocan infraestructura, ni para escribir código, ni para operar sobre otros repos."
 ---
 
 # Cerebro
@@ -19,6 +19,11 @@ como cerebro.
   actual**. Es lo único que responde "qué hay ahora". Para costos, licencias
   y uso de QuickSight, las recetas y los datos de facturación verificados
   están en `intelica-arca-finops`.
+
+- **Las bases de datos** (`db_denver_dev`...: una tool por base): los
+  **datos**. Antes de consultar, la ficha del objeto en el catálogo
+  (`database/catalogo/INDEX.md`): qué significa cada columna y por dónde se
+  acota. Las filas se usan para responder y no se guardan en ningún lado.
 
 El grafo envejece; la infraestructura no explica sus motivos. **Cuando las dos
 no coinciden, eso es el hallazgo** — se reporta con las dos versiones, porque

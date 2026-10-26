@@ -43,6 +43,29 @@ Usage:
     ]
     EOF
 
+Database catalog cards ("fichas", database/catalogo/ in intelica-brain-ia)
+go in the same call, as an object instead of a list:
+
+    {"temas": [ ...topics as above... ],
+     "fichas": [
+       {"perfil": "denver", "base": "ASSOCINV", "objeto": "dbo.FEE_FRAC_N",
+        "tipo": "tabla", "title": "...", "summary": "...", "body": "## Para que sirve\n...",
+        "entornos": ["denver-dev"], "filas_aprox": 378182565, "medido_en": "2026-10-25",
+        "acotar_por": "RPT_BNK_ID", "tags": ["fees"], "fuentes": ["inbox/..."],
+        "temas": ["<title of a topic in this same call>"],
+        "entities": [{"type": "DatabaseObject", "id": "ASSOCINV.dbo.FEE_FRAC_N",
+                      "object_type": "table"}],
+        "relations": [{"from": "ASSOCINV.dbo.FEE_FRAC_N", "type": "IN_DATABASE",
+                       "to": "ASSOCINV"}]}
+     ]}
+
+A card is the WHOLE file, rewritten: to update one, read it first with
+get_file_contents and send the merged result. `tipo` is tabla, vista, proc
+or funcion for an object card (path <perfil>/<BASE>/<OBJETO>.md), `base` for
+<perfil>/<BASE>/_base.md and `servidor` for <perfil>/_servidor.md. `temas`
+adds the paths of those topics to `fuentes`, so the card cites the
+conversation it came from.
+
 A topic can carry `report_file`: the local path of an HTML report generated
 in the conversation. The report goes to S3, not to the repo -- the script
 derives its key from the same date and slug as the `.md`, puts it in the
@@ -80,7 +103,10 @@ REQUIRED_FIELDS = {
     "Database": ("id",),
     "WindowsServer": ("id",),
     "PatchReview": ("id", "date"),
+    "DatabaseObject": ("id", "object_type"),
 }
+
+OBJECT_TYPES = {"table", "view", "procedure", "function"}
 
 # El conocimiento esta particionado por dominio; todo tema declara a cual
 # pertenece, y eso decide en que carpeta de `inbox/` va.
@@ -105,6 +131,9 @@ RELATION_TYPES = {
     "RUNS_ON",
     "REVIEWED_IN",
     "SAME_AS",
+    "IN_DATABASE",
+    "REFERENCES",
+    "WRITES",
 }
 
 # `DOCUMENTED_IN` es automatica: la deriva el reconstructor del par
@@ -278,6 +307,12 @@ def validate_entities(
                 "entre curaciones y una IP cambia -- usar el ID real del recurso."
             )
 
+        if entity_type == "DatabaseObject" and entity.get("object_type") not in OBJECT_TYPES:
+            errors.append(
+                f"{where}: `object_type: {entity.get('object_type')}` tiene que ser uno de "
+                f"{', '.join(sorted(OBJECT_TYPES))}."
+            )
+
         if entity_type == "Resource":
             resource_type = str(entity.get("resource_type"))
             if not SNAKE_CASE.match(resource_type):
@@ -352,6 +387,113 @@ def validate_relations(
                 )
 
 
+# --- Fichas del catalogo ----------------------------------------------------
+# database/catalogo/ en intelica-brain-ia: lo descriptivo de cada base y
+# objeto, una ficha por objeto que se edita en su lugar. El formato esta en
+# database/catalogo/README.md de ese repo.
+
+CATALOG_DIR = "database/catalogo"
+FICHA_TIPOS = {"tabla": "table", "vista": "view", "proc": "procedure", "funcion": "function"}
+PERFIL = re.compile(r"^[a-z][a-z0-9]*$")
+BASE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*\*?$")
+OBJETO = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$")
+MAX_TAGS = 8
+
+
+def ficha_path(ficha: dict) -> str:
+    perfil, tipo = ficha["perfil"], ficha["tipo"]
+    if tipo == "servidor":
+        return f"{CATALOG_DIR}/{perfil}/_servidor.md"
+    # La carpeta es la base como la escribe el motor, sin el * de una
+    # plantilla (MSTRAFB* -> MSTRAFB); el archivo, el objeto en mayusculas,
+    # como las fichas que ya existen.
+    carpeta = ficha["base"].rstrip("*").upper()
+    if tipo == "base":
+        return f"{CATALOG_DIR}/{perfil}/{carpeta}/_base.md"
+    return f"{CATALOG_DIR}/{perfil}/{carpeta}/{ficha['objeto'].split('.')[1].upper()}.md"
+
+
+def validate_ficha(ficha: dict, position: str, temas: set[str],
+                   errors: list[str], warnings: list[str]) -> None:
+    for field in ("title", "summary", "body"):
+        if not str(ficha.get(field) or "").strip():
+            errors.append(f"{position}: falta `{field}`")
+    if "\n" in str(ficha.get("summary") or ""):
+        errors.append(f"{position}: `summary` va en una celda del indice del catalogo: una linea.")
+
+    tipo = ficha.get("tipo")
+    if tipo not in set(FICHA_TIPOS) | {"base", "servidor"}:
+        errors.append(f"{position}: `tipo` tiene que ser tabla, vista, proc, funcion, base o "
+                      f"servidor, llego {tipo!r}")
+        return
+    if not PERFIL.match(str(ficha.get("perfil") or "")):
+        errors.append(f"{position}: `perfil` va en minusculas, como el del ejecutor (`denver`).")
+        return
+    if tipo != "servidor" and not BASE.match(str(ficha.get("base") or "")):
+        errors.append(f"{position}: `base` es el nombre de la base como lo escribe el motor "
+                      f"(`ASSOCINV`, `MSTRAFB*`), llego {ficha.get('base')!r}")
+        return
+
+    if tipo in FICHA_TIPOS:
+        objeto = str(ficha.get("objeto") or "")
+        if not OBJETO.match(objeto):
+            errors.append(f"{position}: `objeto` va como esquema.nombre (`dbo.FEE_FRAC_N`), "
+                          f"llego {objeto!r}")
+            return
+        # La ficha de un objeto es la que lo declara en el grafo: sin su
+        # entidad, el objeto queda documentado y sin nodo.
+        esperado = f"{ficha['base']}.{objeto}"
+        propia = [e for e in ficha.get("entities") or []
+                  if isinstance(e, dict) and e.get("type") == "DatabaseObject"
+                  and str(e.get("id", "")).lower() == esperado.lower()]
+        if not propia:
+            errors.append(f"{position}: falta la entidad `DatabaseObject` con id `{esperado}`.")
+        elif propia[0].get("object_type") != FICHA_TIPOS[tipo]:
+            errors.append(f"{position}: `tipo: {tipo}` y `object_type: "
+                          f"{propia[0].get('object_type')}` no coinciden "
+                          f"(se espera `{FICHA_TIPOS[tipo]}`).")
+
+    tags = ficha.get("tags") or []
+    if not tags:
+        warnings.append(f"{position}: sin `tags`; junto con `summary` es lo que se lee en el indice.")
+    elif len(tags) > MAX_TAGS:
+        warnings.append(f"{position}: {len(tags)} tags; el indice muestra los primeros {MAX_TAGS}.")
+    for titulo in ficha.get("temas") or []:
+        if titulo not in temas:
+            errors.append(f"{position}: `temas` nombra '{titulo}', que no es un tema de este push.")
+
+    declared = validate_entities(ficha, position, errors, warnings)
+    validate_relations(ficha, position, declared, errors, warnings)
+
+
+def render_ficha(ficha: dict, today: str, fuentes_de_temas: list[str]) -> str:
+    lines = ["---", f"title: {yaml_scalar(ficha['title'])}", f"date: {today}",
+             f"summary: {yaml_scalar(ficha['summary'])}"]
+    tipo = ficha["tipo"]
+    if tipo in FICHA_TIPOS:
+        lines.append(f"tipo: {tipo}")
+    lines.append(f"perfil: {ficha['perfil']}")
+    if tipo != "servidor":
+        lines.append(f"base: {yaml_scalar(ficha['base'])}")
+    if tipo in FICHA_TIPOS:
+        lines.append(f"objeto: {ficha['objeto']}")
+    for clave in ("entornos",):
+        if ficha.get(clave):
+            lines.append(f"{clave}: {yaml_inline_list(ficha[clave])}")
+    for clave in ("filas_aprox", "medido_en", "acotar_por"):
+        if ficha.get(clave) not in (None, ""):
+            lines.append(f"{clave}: {yaml_scalar(ficha[clave])}")
+    if ficha.get("tags"):
+        lines.append(f"tags: {yaml_inline_list(ficha['tags'])}")
+    fuentes = list(dict.fromkeys(list(ficha.get("fuentes") or []) + fuentes_de_temas))
+    if fuentes:
+        lines.append("fuentes:")
+        lines += [f"  - {yaml_scalar(f)}" for f in fuentes]
+    lines += render_graph_body(ficha)
+    lines += ["---", ""]
+    return "\n".join(lines) + "\n" + ficha["body"].strip() + "\n"
+
+
 # --- Serializacion YAML -----------------------------------------------------
 # Minima y a mano: estos scripts corren con el python3 del sistema de cada uno,
 # sin garantia de que PyYAML este instalado.
@@ -391,7 +533,14 @@ def render_graph_file(topic: dict, md_filename: str) -> str:
     ]
     if topic.get("account"):
         lines.append(f"account: {yaml_scalar(topic['account'])}")
+    lines += render_graph_body(topic)
+    return "\n".join(lines) + "\n"
 
+
+def render_graph_body(topic: dict) -> list[str]:
+    """`entities` y `relations` en bloque: la forma que lee build_graph.py,
+    en un .graph.yaml o en el frontmatter de una ficha."""
+    lines: list[str] = []
     entities = topic.get("entities") or []
     if entities:
         lines.append("entities:")
@@ -415,8 +564,7 @@ def render_graph_file(topic: dict, md_filename: str) -> str:
             lines.append(f"  - from: {yaml_scalar(relation['from'])}")
             lines.append(f"    type: {yaml_scalar(relation['type'])}")
             lines.append(f"    to: {yaml_scalar(relation['to'])}")
-
-    return "\n".join(lines) + "\n"
+    return lines
 
 
 def render_markdown(topic: dict, today: str, graph_filename: str, report_key: str) -> str:
@@ -449,13 +597,19 @@ def render_markdown(topic: dict, today: str, graph_filename: str, report_key: st
 
 def main() -> int:
     try:
-        topics = json.load(sys.stdin)
+        entrada = json.load(sys.stdin)
     except json.JSONDecodeError as exc:
         print(f"La entrada no es JSON valido: {exc}", file=sys.stderr)
         return 1
 
-    if not isinstance(topics, list) or not topics:
-        print("Se esperaba una lista de temas, no vacia.", file=sys.stderr)
+    # Una lista es la forma de siempre (solo temas); un objeto suma fichas.
+    if isinstance(entrada, dict):
+        topics, fichas = entrada.get("temas") or [], entrada.get("fichas") or []
+    else:
+        topics, fichas = entrada, []
+    if not isinstance(topics, list) or not isinstance(fichas, list) or not (topics or fichas):
+        print("Se esperaba una lista de temas, o {\"temas\": [...], \"fichas\": [...]}, "
+              "no vacia.", file=sys.stderr)
         return 1
 
     errors: list[str] = []
@@ -466,6 +620,20 @@ def main() -> int:
             continue
         validate_topic(topic, f"tema #{index + 1} ({topic.get('title', 'sin titulo')})",
                        errors, warnings)
+    titulos = {str(t.get("title")) for t in topics if isinstance(t, dict)}
+    rutas_fichas: set[str] = set()
+    for index, ficha in enumerate(fichas):
+        if not isinstance(ficha, dict):
+            errors.append(f"ficha #{index + 1}: tiene que ser un objeto")
+            continue
+        position = f"ficha #{index + 1} ({ficha.get('objeto') or ficha.get('base') or ficha.get('tipo')})"
+        antes = len(errors)
+        validate_ficha(ficha, position, titulos, errors, warnings)
+        if len(errors) == antes:
+            ruta = ficha_path(ficha)
+            if ruta in rutas_fichas:
+                errors.append(f"{position}: hay otra ficha para {ruta} en este push; van juntas.")
+            rutas_fichas.add(ruta)
 
     for warning in warnings:
         print(f"  AVISO  {warning}", file=sys.stderr)
@@ -483,11 +651,17 @@ def main() -> int:
 
     today = datetime.now(timezone.utc).date().isoformat()
     suffix = secrets.token_hex(2)
-    identifier = slugify(topics[0]["title"]) if len(topics) == 1 else f"multi-{len(topics)}"
+    if len(topics) == 1:
+        identifier = slugify(topics[0]["title"])
+    elif topics:
+        identifier = f"multi-{len(topics)}"
+    else:
+        identifier = f"catalogo-{len(fichas)}"
     branch = f"docs/brain-{today}-{identifier}-{suffix}"
 
     files = []
     reports = []
+    md_de_tema: dict[str, str] = {}
     for topic in topics:
         slug = slugify(topic["title"])
         domain = topic["domain"]
@@ -512,6 +686,7 @@ def main() -> int:
             reports.append({"key": report_key, "file": report_path,
                             "size_bytes": os.path.getsize(report_path)})
 
+        md_de_tema[topic["title"]] = f"{directory}/{md_filename}"
         files.append(
             {
                 "path": f"{directory}/{md_filename}",
@@ -528,10 +703,19 @@ def main() -> int:
                 }
             )
 
+    for ficha in fichas:
+        ruta = ficha_path(ficha)
+        files.append({
+            "path": ruta,
+            "content": render_ficha(ficha, today, [md_de_tema[t] for t in ficha.get("temas") or []]),
+            "commit_message": ficha.get("commit_message",
+                                        f"docs(catalogo): {ruta[len(CATALOG_DIR) + 1:]}"),
+        })
+
     json.dump({"new_branch_name": branch, "files": files, "reports": reports},
               sys.stdout, ensure_ascii=False)
     print(f"\nOK: {len(files)} archivo(s) y {len(reports)} reporte(s) para "
-          f"{len(topics)} tema(s).", file=sys.stderr)
+          f"{len(topics)} tema(s) y {len(fichas)} ficha(s).", file=sys.stderr)
     return 0
 
 

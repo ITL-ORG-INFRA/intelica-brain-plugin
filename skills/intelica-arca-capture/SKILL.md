@@ -54,6 +54,20 @@ conversation.
 - **`relations`** — how those entities connect.
 - **`accounts`** — the AWS accounts involved.
 - **`open_questions`** — what was left unresolved.
+- **`catalogo`** — what was learned that *describes* a database object:
+  what a table is for, what a column means, which column or index to filter
+  by, which proc writes it, what it joins with, a gotcha that cost time. One
+  item per object: `{"objeto": "ASSOCINV.dbo.FEE_FRAC_N", "perfil":
+  "denver", "tipo": "tabla", "hechos": ["..."]}`. `objeto` is
+  `<BASE>.<schema>.<name>` as the engine writes it (`MSTRAFB*` for the
+  per-client template); `tipo` is `tabla`, `vista`, `proc`, `funcion`, or
+  `base` with `objeto` set to the database name. It ends up in that object's
+  card in `database/catalogo/`, which is what gets read before the next
+  query. Corrections go in as `"DISCARDED: <claim> — <why>"`, like facts.
+  **Never rows**: no values from a query result, no amounts, no client data
+  — a card describes the table, not its contents. And nothing the database
+  already says on its own (the full column list, types, indexes): only what
+  someone had to work out.
 - **`reports`** — HTML reports generated so far with the Intelica template
   (saved under `salidas/<date>/`): `{"path": "<absolute path>", "about":
   "<one line: what it shows>"}`. The absolute path, exactly as written to
@@ -77,8 +91,10 @@ that nothing can join.
 
 Types available: `Account`, `Resource` (with `resource_type`), `Finding`,
 `Decision`, `Incident`, `Project`, `DatabaseServer` (with `engine`),
-`Database`, `WindowsServer`, `PatchReview`. There is no `Person` type —
-don't model who did or said something.
+`Database`, `DatabaseObject` (with `object_type`: `table`, `view`,
+`procedure`, `function`; id `<BASE>.<schema>.<name>`), `WindowsServer`,
+`PatchReview`. There is no `Person` type — don't model who did or said
+something.
 
 On an `Incident`, `date` is when it **started**, not when it was noticed.
 If the conversation says something had been failing since a date before
@@ -101,6 +117,10 @@ python3 scripts/write_capture.py --session <session_id> --tramo <n> <<'EOF'
     {"from": "i-0abc123", "type": "BELONGS_TO", "to": "Portal-Prod"}
   ],
   "open_questions": ["..."],
+  "catalogo": [
+    {"objeto": "ASSOCINV.dbo.FEE_FRAC_N", "perfil": "denver", "tipo": "tabla",
+     "hechos": ["FEE_PROD_AMT is the allocated amount; FEE_TOTAL_AMT repeats the whole invoice on every row"]}
+  ],
   "reports": [
     {"path": "/Users/.../salidas/2026-10-02/plan-continuidad-caida-eu-south-2.html", "about": "..."}
   ]
