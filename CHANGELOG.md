@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.25.0 - 2026-11-01
+
+- **Cuánto tardó cada turno.** Dos hooks nuevos (`UserPromptSubmit` y
+  `Stop`) anotan la hora al recibir el mensaje y, al terminar, muestran
+  `02:00 min` debajo de la respuesta. Es el turno entero: consultas, lo que
+  Claude piensa entre ellas y la respuesta escrita. El modelo no tiene
+  reloj, por eso lo mide el cliente. Solo en Claude Code (terminal, app de
+  escritorio, IDE); claude.ai no corre hooks. Se apaga con
+  `INTELICA_ARCA_TIEMPO=off`.
+
 ## 0.24.0 - 2026-10-26
 
 - **Un solo conector.** El plugin declara solo `intelica-gateway`, que sirve

@@ -16,7 +16,8 @@ agents/cerebro.md                el agente que cruza el grafo con el estado en v
 agents/smith.md                  una copia de smith: investiga un frente de un problema
 agents/seraph.md                 una copia de seraph: revisa la seguridad de un frente
 evals/                           casos de `claude plugin eval` para medir a cerebro, smith y seraph
-hooks/                           PreCompact, que guarda el tramo que se va a compactar
+hooks/                           PreCompact, que guarda el tramo que se va a compactar;
+                                 UserPromptSubmit y Stop, que muestran cuánto tardó el turno
 ```
 
 ## La versión vive en DOS archivos

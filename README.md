@@ -140,6 +140,22 @@ del transcript de la sesion (`~/.claude/projects/*/<session_id>.jsonl`)
 cortando en cada compactacion. El hook existe para no depender de que ese
 archivo siga ahi y con el mismo formato.
 
+## El tiempo de cada turno
+
+Al terminar cada respuesta, Claude Code muestra cuánto tardó el turno:
+
+```
+02:00 min
+```
+
+Lo miden dos hooks del plugin (`hooks/tiempo_turno.py`): `UserPromptSubmit`
+anota la hora en `~/.intelica-arca/turnos/<session_id>` y `Stop` muestra la
+diferencia. El modelo no tiene reloj; el cliente sí. Va debajo del pie de
+tokens y USD que piden las instrucciones del conector.
+
+Solo en Claude Code: claude.ai no corre hooks. Para apagarlo,
+`INTELICA_ARCA_TIEMPO=off` en el entorno o en el `env` de `settings.json`.
+
 ## Uso
 
 Al cerrar una conversacion que valga documentar:
