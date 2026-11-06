@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.26.0 - 2026-11-06
+
+- **`/intelica-arca` ya no abre PRs que `validar` rechaza.** Dos reglas que
+  `test_frontmatter.py` de intelica-brain-ia exige desde su PR 30 y
+  `build_push_args.py` no conocía:
+  - Todo documento lleva `account`. Un tema de `database` o `windows` sin
+    cuenta sale con `account: N/A`; antes se omitía, y ese documento dejó en
+    rojo el `validar` de todos los PRs siguientes (brain-ia 32, 33 y 34).
+  - Una entidad `Account` usa el nombre de la carpeta de inventario como
+    `id`. Si llega con el número de cuenta y el nombre en `name`, el script
+    la corrige solo (el número pasa a `account_id`, las relaciones al
+    nombre) y avisa; cualquier otro id que no sea canónico es un error.
+    `account` en `aws` también tiene que ser canónico, o `N/A`.
+- `intelica-arca-capture` y `intelica-arca` dicen la regla del id de cuenta.
+- Test nuevo: `skills/intelica-arca/scripts/test_cuentas.py`.
+
 ## 0.24.0 - 2026-10-26
 
 - **Un solo conector.** El plugin declara solo `intelica-gateway`, que sirve

@@ -96,6 +96,11 @@ Types available: `Account`, `Resource` (with `resource_type`), `Finding`,
 `PatchReview`. There is no `Person` type — don't model who did or said
 something.
 
+An `Account`'s `id` is its inventory folder name (`Interchange-Prod`), the
+same value used in `accounts`, never the 12-digit number you see inside
+ARNs: that goes in `account_id`. With the number as `id`, the account
+becomes a second node that the rest of the graph never reaches.
+
 On an `Incident`, `date` is when it **started**, not when it was noticed.
 If the conversation says something had been failing since a date before
 anyone reported it, that earlier date is the one to capture — the gap

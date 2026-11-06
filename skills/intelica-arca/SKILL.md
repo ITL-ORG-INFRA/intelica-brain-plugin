@@ -262,8 +262,13 @@ An object card has to declare its own `DatabaseObject` (id
 `domain` is required (`aws`, `database`, or `windows` — from Step 2.5) and
 decides the folder: `inbox/aws/<account>/...` keeps the existing
 per-account layout, `inbox/database/...` and `inbox/windows/...` are flat
-unless the topic also carries an `account`. `account` itself stays
-required only for `domain: aws`.
+unless the topic also carries an `account`. `account` is required for
+`domain: aws`; elsewhere, leave it out and the script writes `account: N/A`
+(the knowledge repo's CI rejects a document without it). When present it is
+the account's inventory folder name — `Portal-Prod`, never `Portal-Prd` or
+`060795899335` — or `N/A` for a topic that spans accounts. The same goes for
+the `id` of every `Account` entity: the 12-digit number goes in
+`account_id`.
 
 **If it exits non-zero, nothing was generated.** It prints one line per
 problem: an entity type that isn't in the model, a missing
