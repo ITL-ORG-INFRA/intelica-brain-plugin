@@ -161,6 +161,18 @@ ACCOUNT_IN_KEY = re.compile(r"^[A-Za-z0-9-]+$")
 # terminar en el bucket por accidente.
 MAX_REPORT_BYTES = 5 * 1024 * 1024
 
+# Transcripto de CUENTAS en scripts/test_frontmatter.py de intelica-brain-ia:
+# el nombre de la carpeta de inventario de cada cuenta, mas el payer. El
+# `validar` de ese repo rechaza cualquier otro id de `Account`, asi que un
+# borrador que no lo respete abre un PR que ya nace en rojo. Si allá cambia
+# la lista, cambia acá.
+CUENTAS = {
+    "Analytics-Dev", "Analytics-Prod", "Audit", "Intelica-Devops",
+    "Intelica-Network", "Interchange-Dev", "Interchange-Prod", "Log-Archive",
+    "Portal-Dev", "Portal-Prod", "Portal-QA", "TCCT-MPA",
+}
+ACCOUNT_NUMBER = re.compile(r"^\d{12}$")
+
 IP_LIKE = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 SNAKE_CASE = re.compile(r"^[a-z0-9]+(_[a-z0-9]+)*$")
 
@@ -190,11 +202,23 @@ def validate_topic(topic: dict, position: str, errors: list[str], warnings: list
             "en que carpeta de inbox/ se escribe."
         )
 
-    # `account` es un concepto de AWS (una cuenta de la organizacion). Para
-    # database/windows no siempre aplica -- se exige solo en `aws`, donde ya
-    # es la convencion establecida de la carpeta por cuenta.
-    if domain == "aws" and not str(topic.get("account") or "").strip():
-        errors.append(f"{position}: falta `account` (dominio `aws`)")
+    # En `aws` la cuenta decide la carpeta y tiene que venir del borrador. En
+    # database/windows no siempre aplica, pero el frontmatter la exige igual
+    # (test_frontmatter.py de intelica-brain-ia): sin ella va `N/A`, que es lo
+    # que pide el README de ese repo para lo que no es de una cuenta.
+    account = str(topic.get("account") or "").strip()
+    if not account:
+        if domain == "aws":
+            errors.append(f"{position}: falta `account` (dominio `aws`)")
+        else:
+            topic["account"] = "N/A"
+    elif report_account(topic) and account not in CUENTAS:
+        errors.append(
+            f"{position}: `account: {account}` no es una cuenta canonica. Validas: "
+            f"{', '.join(sorted(CUENTAS))}, o `N/A` si el tema cruza cuentas."
+        )
+
+    normalize_account_entities(topic, position, warnings)
 
     summary = str(topic.get("summary") or "")
     if "\n" in summary:
@@ -218,6 +242,35 @@ def validate_topic(topic: dict, position: str, errors: list[str], warnings: list
 def report_account(topic: dict) -> str:
     account = str(topic.get("account") or "").strip()
     return "" if account in ("N/A", "n/a") else account
+
+
+def normalize_account_entities(topic: dict, position: str, warnings: list[str]) -> None:
+    """Una `Account` con el numero de cuenta como id y el nombre canonico en
+    `name` ya llego a un PR de intelica-brain-ia (el 32): el modelo ve el
+    numero en los ARNs y lo usa. Como el nombre ya esta, se
+    corrige sin pedir otra vuelta, y las relaciones que apuntaban al numero
+    pasan al nombre. Lo que no se puede deducir lo rechaza validate_entities."""
+    renamed: dict[str, str] = {}
+    for entity in topic.get("entities") or []:
+        if not isinstance(entity, dict) or entity.get("type") != "Account":
+            continue
+        entity_id, name = str(entity.get("id") or ""), entity.get("name")
+        if entity_id in CUENTAS or name not in CUENTAS:
+            continue
+        if ACCOUNT_NUMBER.match(entity_id):
+            entity.setdefault("account_id", entity_id)
+        entity["id"] = name
+        del entity["name"]
+        renamed[entity_id] = name
+        warnings.append(
+            f"{position}: la cuenta `{entity_id}` pasa a `{name}`, su id canonico"
+            + (" (el numero queda en `account_id`)" if ACCOUNT_NUMBER.match(entity_id) else "")
+        )
+    for relation in topic.get("relations") or []:
+        if isinstance(relation, dict):
+            for end in ("from", "to"):
+                if relation.get(end) in renamed:
+                    relation[end] = renamed[relation[end]]
 
 
 def validate_report(topic: dict, position: str, errors: list[str]) -> None:
@@ -305,6 +358,14 @@ def validate_entities(
             errors.append(
                 f"{where}: `{entity_id}` es una IP. Los IDs tienen que ser estables "
                 "entre curaciones y una IP cambia -- usar el ID real del recurso."
+            )
+
+        if entity_type == "Account" and entity_id not in CUENTAS:
+            hint = (" Es un numero de cuenta: va en `account_id`, y el id es el nombre."
+                    if ACCOUNT_NUMBER.match(str(entity_id)) else "")
+            errors.append(
+                f"{where}: la cuenta `{entity_id}` no tiene el id canonico, y validar "
+                f"la rechaza en el PR.{hint} Validas: {', '.join(sorted(CUENTAS))}."
             )
 
         if entity_type == "DatabaseObject" and entity.get("object_type") not in OBJECT_TYPES:
