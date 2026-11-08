@@ -88,8 +88,13 @@ Verificado; no prometas lo que no se puede:
   campo:
   `[v, acct, eni, src="10.10.1.165", dst, sport, dport, proto, pkts, bytes>100000000, start, end, action, status]`.
   Acotá con `logStreamNames` y con `startTime`/`endTime`.
-- **`sort_by` sobre fechas falla dentro de `query`**: el JMESPath se aplica
-  antes de serializar los `datetime`. Filtrá sin ordenar.
+- **Las fechas llegan a `query` como texto** (`2026-11-04 18:15:08+00:00`):
+  `sort_by`, `max_by`, `min_by` y comparar contra un texto
+  (`[?LaunchTime > '2026-11-01']`) funcionan. Todas vienen en UTC. Si la
+  operación acepta `StartTime`, igual conviene acotar del lado de AWS.
+- **El historial viene cortado**: `GetJobRuns` en 25 corridas y
+  `LookupEvents` en 50 eventos si no se pide `max_items`. Lo demás, con
+  `next_token`.
 - **Las claves de `query` no admiten caracteres no ASCII**: `cuenta_dueña`
   rompe el parser.
 - **No se lee el contenido de S3, ni secretos, ni las variables de entorno de

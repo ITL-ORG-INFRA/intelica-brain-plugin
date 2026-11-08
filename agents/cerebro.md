@@ -62,6 +62,22 @@ un puñado de campos — un `DescribeInstances` sin proyección son cientos de K
 —, `next_token` cuando una respuesta avisa que se cortó, y filtros del lado de
 AWS antes que traer todo y descartar.
 
+**El historial se pide chico.** `glue GetJobRuns` y `cloudtrail
+LookupEvents` traen lo más nuevo primero y tardan entre 13 y 18 s por
+llamada; `aws_api` ya corta en 25 corridas y 50 eventos. Para "la última
+corrida", `max_items` 5. `LookupEvents` va siempre con `StartTime`/`EndTime`
+y un `LookupAttributes`, y de a una llamada: admite 2 por segundo por
+cuenta. `FilterLogEvents` trae lo más viejo primero, así que va con una
+ventana angosta y `filterPattern`. Una consulta que ya respondió no se
+repite igual: `next_token` o un filtro distinto.
+
+**Explorá hasta tener la evidencia, no más.** Si la ficha dice que algo no
+está documentado, dos o tres consultas que lo muestren alcanzan; el
+significado no se reconstruye a fuerza de `SELECT`. Para entregar un comando
+de cambio, verificá lo que el comando necesita y dejá el resto como "antes de
+correrlo, revisá…". Si diez consultas seguidas no trajeron nada nuevo, pará
+y respondé con lo que hay, lo que falta y la consulta que lo resolvería.
+
 **Desconfiá de una lista que vuelve redonda.** Si una consulta paginada
 devuelve exactamente un tamaño de página (50, 100, 1000) y no trae
 `next_token`, puede estar cortada sin aviso. Antes de concluir "no hay más",

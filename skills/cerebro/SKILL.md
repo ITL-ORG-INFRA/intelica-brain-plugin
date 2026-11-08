@@ -64,12 +64,38 @@ se cae en él.
    y filtros del lado de AWS antes que traer todo y descartar. Una lista que
    vuelve con un tamaño de página exacto (50, 100) y sin `next_token` puede
    estar cortada: comprobalo acotando antes de concluir que no hay más.
-4. **Un permiso se verifica, no se recuerda.** Para afirmar qué puede hacer un
+4. **El historial se pide chico.** `glue GetJobRuns` y `cloudtrail
+   LookupEvents` traen lo más nuevo primero, y son las llamadas más lentas que
+   hay: entre 13 y 18 s cada una. `aws_api` ya corta en 25 corridas y 50
+   eventos si no pedís otra cosa.
+   - "La última corrida", "cómo terminó anoche": `max_items` 5.
+   - `LookupEvents`, siempre con `StartTime`/`EndTime` del período que se
+     pregunta y un `LookupAttributes` (`EventName`, `Username`,
+     `ResourceName`). Admite 2 llamadas por segundo por cuenta: de a una, no
+     en paralelo, o vuelve `ThrottlingException`.
+   - `FilterLogEvents` trae lo más viejo primero: `startTime`/`endTime`
+     angostos y `filterPattern`, nunca el grupo entero.
+   - Una consulta que ya respondió no se repite igual. Si no alcanzó, pedí la
+     página siguiente con `next_token` o cambiá el filtro.
+5. **Un permiso se verifica, no se recuerda.** Para afirmar qué puede hacer un
    rol, leé su política o probá la operación. `ReadOnlyAccess` no incluye
    QuickSight, aunque lo parezca.
-5. **Si no se pudo consultar la cuenta, la respuesta empieza por eso**, y lo
+6. **Si no se pudo consultar la cuenta, la respuesta empieza por eso**, y lo
    que diga el código va después, como lo que *debería* haber. Los tests y
    fixtures del repo usan datos inventados: no describen las cuentas.
+
+**Explorá hasta tener la evidencia, no más.** Cada consulta tarda y ocupa
+contexto, y una respuesta correcta con 13 llamadas vale lo mismo que con 4.
+
+- **Si la ficha dice que algo no está documentado**, dos o tres consultas que
+  lo muestren alcanzan: que el objeto existe, sus columnas, un conteo
+  acotado. Respondé que no está documentado y qué habría que confirmar; el
+  significado no se reconstruye a fuerza de `SELECT`.
+- **Para entregar un comando de cambio**, verificá lo que el comando
+  necesita: que los identificadores existen y el estado que el cambio va a
+  modificar. El resto va en el comando, como "antes de correrlo, revisá…".
+- **Si diez consultas seguidas no trajeron nada nuevo**, pará y respondé con
+  lo que hay, lo que falta y la consulta que lo resolvería.
 
 **Para investigaciones largas, delegá en el subagente `cerebro`.** Quince
 consultas encadenadas para entender por qué se reinicia un pod no tienen por
