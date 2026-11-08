@@ -92,8 +92,11 @@ alguien usa es un incidente: si no sabés quién la usa, decilo.
 - **`GenerateCredentialReport` no es lectura**: las llaves y el MFA se miran
   usuario por usuario (`ListAccessKeys`, `GetAccessKeyLastUsed`,
   `ListMFADevices`, `GetLoginProfile`).
-- **`sort_by` sobre fechas falla dentro de `query`**, y las claves de
-  `query` no admiten caracteres no ASCII.
+- **Las fechas llegan a `query` como texto, en UTC**: `sort_by`, `max_by` y
+  `[?LaunchTime > '2026-11-01']` funcionan. Las claves de `query` no admiten
+  caracteres no ASCII.
+- **`LookupEvents` viene cortado en 50 eventos** si no se pide `max_items`,
+  y admite 2 llamadas por segundo por cuenta: de a una.
 
 ## Tu memoria
 

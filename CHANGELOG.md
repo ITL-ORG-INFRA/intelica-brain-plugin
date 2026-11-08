@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.27.0 - 2026-11-08
+
+Sale de la autocrítica de la semana del 1/11 (AUDIT y evals de cerebro).
+
+- **El historial se pide chico.** `cerebro` (skill y agente) tiene la receta:
+  `max_items` 5 para "la última corrida", `LookupEvents` siempre con ventana
+  y `LookupAttributes` y de a una llamada (admite 2 por segundo), y
+  `FilterLogEvents` con ventana angosta porque trae lo más viejo primero.
+  `GetJobRuns` y `LookupEvents` fueron el 62 % del tiempo de `aws_api`, con
+  la misma consulta repetida 4 o 5 veces.
+- **Topes de exploración.** Si la ficha dice "sin documentar", dos o tres
+  consultas alcanzan; para un comando de cambio se verifica lo que el
+  comando necesita; diez consultas sin nada nuevo, y se responde con lo que
+  hay. En los evals, cada corrida con plugin costaba 8 veces más que sin él,
+  casi todo en llamadas a tools.
+- **`sort_by` sobre fechas ya funciona.** `aws_api` pasa las fechas a texto
+  antes del `query` (intelica-arca-mcp #77): smith y seraph dejan de decir
+  que falla, y dicen que `GetJobRuns` y `LookupEvents` vienen cortados en
+  25 y 50 si no se pide `max_items`.
+
 ## 0.26.0 - 2026-11-06
 
 - **`/intelica-arca` ya no abre PRs que `validar` rechaza.** Dos reglas que
